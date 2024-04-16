@@ -1,26 +1,25 @@
 #### Preamble ####
-# Purpose: Downloads and saves the data from [...UPDATE THIS...]
-# Author: Yunzhao Li [...UPDATE THIS...]
-# Date: 26 March 2024 [...UPDATE THIS...]
-# Contact: yunzhao.li@mail.utoronto.ca [...UPDATE THIS...]
+# Purpose: Downloads and saves the data from 
+# Author: Yunzhao Li 
+# Date: 16 April 2024 
+# Contact: yunzhao.li@mail.utoronto.ca
 # License: MIT
-# Pre-requisites: [...UPDATE THIS...]
-# Any other information needed? [...UPDATE THIS...]
+# Pre-requisites: None
 
 
 #### Workspace setup ####
-library(opendatatoronto)
 library(tidyverse)
-# [...UPDATE THIS...]
+
 
 #### Download data ####
-# [...ADD CODE HERE TO DOWNLOAD...]
-
-
+aerial_priority <-
+  read_csv(
+    here::here("data/raw_data/THOR_WWII_DATA_CLEAN.csv"),
+    show_col_types = FALSE
+  )
 
 #### Save data ####
-# [...UPDATE THIS...]
 # change the_raw_data to whatever name you assigned when you downloaded it.
-write_csv(the_raw_data, "inputs/data/raw_data.csv") 
+write_csv(aerial_priority, "data/raw_data/aerial_priority.csv") 
 
          
