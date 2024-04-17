@@ -18,11 +18,13 @@ bibliography: references.bib
 
 library(arrow)
 library(knitr)
+library(kableExtra)
 library(modelsummary)
 library(rstanarm)
 library(tidyverse)
 library(ggplot2)
 library(bayesplot)
+library(broom)
 ```
 
 
@@ -46,9 +48,13 @@ Some of our data is of penguins (@fig-bills), from @palmerpenguins.
 #| tbl-cap: "2022 CES (Cooperative Election Study) Data (Cultural)"
 
 # Load in data
-# ces2022_1 <- read_csv("data/cleaned_ces2022_1.csv")
-# ces2022_2 <- read_csv("data/cleaned_ces2022_2.csv")
-# 
+cleaned_aerial_priority <- read_parquet(here::here("data/analysis_data/cleaned_aerial_priority.parquet"))
+
+# Random sampling if needed
+set.seed(302)
+sampled_data <- cleaned_aerial_priority %>%
+  sample_n(3000)
+
 # ces2022_1 |>
 #   head() |>
 #   kable(
@@ -99,6 +105,7 @@ The goal of our modelling strategy is twofold. Firstly,...
 
 Here we briefly describe the Bayesian analysis model used to investigate... Background details and diagnostics are included in [Appendix -@sec-model-details].
 
+
 ## Model set-up
 
 Define $y_i$ as the number of seconds that the plane remained aloft. Then $\beta_i$ is the wing width and $\gamma_i$ is the wing length, both measured in millimeters.  
@@ -132,10 +139,9 @@ Our results are summarized in @tbl-modelresults.
 #| warning: false
 #| message: false
 
-# library(rstanarm)
-# 
-# first_model <-
-#   readRDS(file = here::here("models/first_model.rds"))
+# Load in models
+aerial_priority_model <-
+  readRDS(file = here::here("models/aerial_priority_model.rds"))
 ```
 
 ```{r}
@@ -145,13 +151,14 @@ Our results are summarized in @tbl-modelresults.
 #| tbl-cap: "Explanatory models of flight time based on wing width and wing length"
 #| warning: false
 
-# modelsummary::modelsummary(
-#   list(
-#     "First model" = first_model
-#   ),
-#   statistic = "mad",
-#   fmt = 2
-# )
+# Print the summary of the model to inspect the results
+print(summary(aerial_priority_model))
+
+# Optional: Plot the effects to visualize the model results
+plot(aerial_priority_model)
+
+prior_summary(aerial_priority_model)
+
 ```
 
 
@@ -198,15 +205,15 @@ In @fig-ppcheckandposteriorvsprior-2 we compare the posterior with the prior. Th
 #| fig-cap: "Examining how the model fits, and is affected by, the data"
 #| fig-subcap: ["Posterior prediction check", "Comparing the posterior with the prior"]
 
-# pp_check(first_model) +
-#   theme_classic() +
-#   theme(legend.position = "bottom")
-# 
-# posterior_vs_prior(first_model) +
-#   theme_minimal() +
-#   scale_color_brewer(palette = "Set1") +
-#   theme(legend.position = "bottom") +
-#   coord_flip()
+pp_check(aerial_priority_model) +
+  theme_classic() +
+  theme(legend.position = "bottom")
+
+posterior_vs_prior(aerial_priority_model) +
+  theme_minimal() +
+  scale_color_brewer(palette = "Set1") +
+  theme(legend.position = "bottom") +
+  coord_flip()
 ```
 
 ## Diagnostics
@@ -225,9 +232,9 @@ In @fig-ppcheckandposteriorvsprior-2 we compare the posterior with the prior. Th
 #| fig-subcap: ["Trace plot", "Rhat plot"]
 #| layout-ncol: 2
 
-# plot(first_model, "trace")
-# 
-# plot(first_model, "rhat")
+plot(aerial_priority_model, "trace")
+
+plot(aerial_priority_model, "rhat")
 ```
 
 

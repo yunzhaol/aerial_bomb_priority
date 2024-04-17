@@ -10,6 +10,8 @@
 library(rstanarm)  # Load the rstanarm package for Bayesian modeling
 library(arrow)     # Load the arrow package to read Parquet files
 library(dplyr)
+library(ggplot2)
+library(modelsummary)
 
 #### Read data ####
 cleaned_aerial_priority <- read_parquet("data/analysis_data/cleaned_aerial_priority.parquet")
@@ -36,6 +38,21 @@ print(summary(aerial_priority_model))
 # Optional: Plot the effects to visualize the model results
 plot(aerial_priority_model)
 
+prior_summary(aerial_priority_model)
+
+pp_check(aerial_priority_model) +
+  theme_classic() +
+  theme(legend.position = "bottom")
+
+posterior_vs_prior(aerial_priority_model) +
+  theme_minimal() +
+  scale_color_brewer(palette = "Set1") +
+  theme(legend.position = "bottom") +
+  coord_flip()
+
+plot(aerial_priority_model, "trace")
+
+plot(aerial_priority_model, "rhat")
 
 #### Save model ####
 saveRDS(
