@@ -3,7 +3,8 @@
 ## Overview
 
 The strategic targeting of military assets during World War II was crucial for the success of aerial bombing campaigns. Prioritizing targets effectively could have significant implications on the war’s outcome. This study focuses on the aerial bombing campaigns against Germany, aiming to understand the factors influencing the prioritization of targets from an operational perspective.
-We used a Bayesian ordered logistic regression model to analyze. The data is obtained from [Data World](https://data.world/datamil/world-war-ii-thor-data)
+
+We used a Bayesian ordered logistic regression model to analyze and the data is obtained from [Data World](https://data.world/datamil/world-war-ii-thor-data).
 
 
 ## File Structure
