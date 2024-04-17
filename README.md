@@ -11,7 +11,7 @@ We used a Bayesian ordered logistic regression model to analyze and the data is 
 
 The repo is structured as:
 
--   `data/raw_data` contains the raw data as obtained from the [Data World](https://data.world/datamil/world-war-ii-thor-data).
+-   `data/raw_data` contains the raw data as obtained from [Data World](https://data.world/datamil/world-war-ii-thor-data).
 -   `data/analysis_data` contains the cleaned dataset that was constructed.
 -   `model` contains fitted models. 
 -   `other` contains relevant literature, details about LLM chat interactions, and sketches.
