@@ -6,41 +6,42 @@
 # License: MIT
 # Pre-requisites: None
 
-install.packages("brms")
+install.packages("rstanarm")
 install.packages("dplyr")
 install.packages("arrow")
 #### Workspace setup ####
-library(brms)  # Load the brms package for Bayesian modeling
-library(dplyr) # Load dplyr for data manipulation
-library(arrow)
+library(rstanarm)  # Load the rstanarm package for Bayesian modeling
+library(arrow)     # Load the arrow package to read Parquet files
+library(dplyr)
 
 #### Read data ####
 cleaned_aerial_priority <- read_parquet("data/analysis_data/cleaned_aerial_priority.parquet")
 
 ### Model data ####
-# Assuming your data frame is already loaded into `data`
-# Build a Bayesian ordered logistic regression model
 
+# Random sampling if needed
+set.seed(302)
+sampled_data <- cleaned_aerial_priority %>%
+  sample_n(1000)
 
-# Set a seed for reproducibility
-set.seed(123)
+# Ensure the response is an ordered factor
+sampled_data$tgt_priority_explanation <- factor(
+  sampled_data$tgt_priority_explanation,
+  levels = c("target of last resort", "target of opportunity", "secondary target", "primary target"),
+  ordered = TRUE
+)
 
-# Randomly sample 1000 observations from the dataset
-sampled_cleaned_aerial_priority <- cleaned_aerial_priority %>%
-  sample_n(500)
+# Convert categorical predictors to factors
+sampled_data$tgt_industry <- factor(sampled_data$tgt_industry)
+sampled_data$country_flying_mission <- factor(sampled_data$country_flying_mission)
 
-# Build a Bayesian ordered logistic regression model using the sampled data
-aerial_priority_model <- brm(
+# Build a Bayesian ordered logistic regression model using stan_polr
+aerial_priority_model <- stan_polr(
   formula = tgt_priority_explanation ~ tgt_industry + country_flying_mission + total_tons + ac_attacking,
-  data = sampled_cleaned_aerial_priority,
-  family = cumulative(),  # Use the cumulative link model appropriate for ordered categorical data
-  prior = c(
-    set_prior("normal(0, 5)", class = "b"),  # Normal prior for regression coefficients
-    set_prior("normal(0, 10)", class = "Intercept")  # Normal prior for the intercept
-  ),
-  chains = 4,  # Number of chains in the Bayesian inference
-  iter = 2000,  # Number of iterations per chain
-  control = list(adapt_delta = 0.95)  # Adjust to improve model fitting stability
+  data = sampled_data,
+  method = "logistic",  # Use logistic cumulative link model
+  prior = NULL,  # Use default priors to simplify the model
+  prior_counts = NULL  # Use default priors for the intercepts
 )
 
 # Print the summary of the model to inspect the results
@@ -55,5 +56,3 @@ saveRDS(
   aerial_priority_model,
   file = "models/aerial_priority_model.rds"
 )
-
-
