@@ -6,9 +6,6 @@
 # License: MIT
 # Pre-requisites: None
 
-install.packages("rstanarm")
-install.packages("dplyr")
-install.packages("arrow")
 #### Workspace setup ####
 library(rstanarm)  # Load the rstanarm package for Bayesian modeling
 library(arrow)     # Load the arrow package to read Parquet files

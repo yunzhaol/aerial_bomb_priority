@@ -23,6 +23,7 @@ library(tidyverse)
 ```
 
 
+
 # Introduction
 
 You can and should cross-reference sections and sub-sections. We use @citeR and @rohan.
@@ -35,35 +36,26 @@ The remainder of this paper is structured as follows. @sec-data....
 
 Some of our data is of penguins (@fig-bills), from @palmerpenguins.
 
-```{r}
-#| warning: false
-#| message: false
-#| echo: false
-#| label: tbl-cesdata1
-#| tbl-cap: "2022 CES (Cooperative Election Study) Data (Cultural)"
-
-# Load in data
-ces2022_1 <- read_csv("data/cleaned_ces2022_1.csv")
-ces2022_2 <- read_csv("data/cleaned_ces2022_2.csv")
-
-ces2022_1 |>
-  head() |>
-  kable(
-    col.names = c("Voted For (2020)", "Age Group", "Gender", "Education", "Race", "Religion"),
-    booktabs = TRUE
-  )
-```
 
 ```{r}
 #| label: fig-bills
 #| fig-cap: Bills of penguins
 #| echo: false
 
+ggplot(penguins, aes(x = island, fill = species)) +
+  geom_bar(alpha = 0.8) +
+  scale_fill_manual(values = c("darkorange","purple","cyan4"),
+                    guide = "none") +
+  theme_minimal() +
+  facet_wrap(~species, ncol = 1) +
+  coord_flip()
 ```
+
 
 Talk more about it.
 
 And also planes (@fig-planes). (You can change the height and width, but don't worry about doing that until you have finished every other aspect of the paper - Quarto will try to make it look nice and the defaults usually work well once you have enough text.)
+
 
 ```{r}
 #| label: fig-planes
@@ -72,11 +64,7 @@ And also planes (@fig-planes). (You can change the height and width, but don't w
 #| warning: false
 #| message: false
 
-cleaned_aerial_priority <- read_parquet("data/analysis_data/cleaned_aerial_priority.parquet")
-head(cleaned_aerial_priority)
-```
-
-```{r}
+analysis_data <- read_csv(here::here("data/analysis_data/analysis_data.csv"))
 
 analysis_data |> 
   ggplot(aes(x = width, y = length)) +
@@ -85,6 +73,7 @@ analysis_data |>
   labs(x = "Wing width (mm)",
        y = "Wing length (mm)")
 ```
+
 
 Talk way more about it. 
 
@@ -145,6 +134,7 @@ We can use maths by including latex between dollar signs, for instance $\theta$.
 
 Our results are summarized in @tbl-modelresults.
 
+
 ```{r}
 #| echo: false
 #| eval: true
@@ -172,6 +162,7 @@ modelsummary::modelsummary(
   fmt = 2
 )
 ```
+
 
 
 
@@ -207,6 +198,7 @@ In @fig-ppcheckandposteriorvsprior-1 we implement a posterior predictive check. 
 
 In @fig-ppcheckandposteriorvsprior-2 we compare the posterior with the prior. This shows... 
 
+
 ```{r}
 #| eval: true
 #| echo: false
@@ -228,11 +220,13 @@ posterior_vs_prior(first_model) +
   coord_flip()
 ```
 
+
 ## Diagnostics
 
 @fig-stanareyouokay-1 is a trace plot. It shows... This suggests...
 
 @fig-stanareyouokay-2 is a Rhat plot. It shows... This suggests...
+
 
 ```{r}
 #| echo: false
@@ -251,9 +245,11 @@ plot(first_model, "rhat")
 
 
 
+
 \newpage
 
 
 # References
+
 
 
