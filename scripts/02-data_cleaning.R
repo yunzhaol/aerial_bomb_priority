@@ -21,9 +21,8 @@ cleaned_aerial_priority <-
   clean_names(aerial_priority) |>
   filter(
     tgt_country == "GERMANY", 
-    tgt_industry %in% c("RR INSTALLATIONS,  TRACKS,  MARSHALLING YARDS,  
-                        AND STATIONS", "SYNTHETIC OIL REFINERIES", "AIR FIELDS 
-                        AND AIRDROMES", "CITIES TOWNS AND URBAN AREAS", 
+    tgt_industry %in% c("\"RR INSTALLATIONS,  TRACKS,  MARSHALLING YARDS,  AND STATIONS\"", "SYNTHETIC OIL REFINERIES", 
+                        "AIR FIELDS AND AIRDROMES", "CITIES TOWNS AND URBAN AREAS", 
                         "UNIDENTIFIED TARGETS") ) |>
   select(tgt_priority_explanation, tgt_industry, 
          country_flying_mission, total_tons, ac_attacking) |>
@@ -34,7 +33,7 @@ cleaned_aerial_priority <-
     country_flying_mission = if_else(is.na(country_flying_mission), "others", as.character(country_flying_mission)),
     # Recode 'tgt_industry' to more general categories and convert to factor after 'tolower'
     tgt_industry = case_when(
-      tgt_industry == "rr installations,  tracks,  marshalling yards,  and stations" ~ "railway infrastructure",
+      tgt_industry == "\"rr installations,  tracks,  marshalling yards,  and stations\"" ~ "railway infrastructure",
       tgt_industry == "air fields and airdromes" ~ "air fields",
       tgt_industry == "cities towns and urban areas" ~ "urban areas",
       TRUE ~ as.character(tgt_industry)  # Keep all other industries as they are
@@ -59,4 +58,4 @@ view((cleaned_aerial_priority))
 
 #### Save data ####
 write_parquet(cleaned_aerial_priority, "data/analysis_data/cleaned_aerial_priority.parquet") 
-
+write_csv(cleaned_aerial_priority, "data/analysis_data/cleaned_aerial_priority.csv") 

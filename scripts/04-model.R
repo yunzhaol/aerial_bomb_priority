@@ -17,25 +17,14 @@ cleaned_aerial_priority <- read_parquet("data/analysis_data/cleaned_aerial_prior
 ### Model data ####
 
 # Random sampling if needed
-set.seed(302)
-sampled_data <- cleaned_aerial_priority %>%
-  sample_n(1000)
-
-# Ensure the response is an ordered factor
-sampled_data$tgt_priority_explanation <- factor(
-  sampled_data$tgt_priority_explanation,
-  levels = c("target of last resort", "target of opportunity", "secondary target", "primary target"),
-  ordered = TRUE
-)
-
-# Convert categorical predictors to factors
-sampled_data$tgt_industry <- factor(sampled_data$tgt_industry)
-sampled_data$country_flying_mission <- factor(sampled_data$country_flying_mission)
+set.seed(131)
+sampled_aerial_data <- cleaned_aerial_priority %>%
+  sample_n(5000)
 
 # Build a Bayesian ordered logistic regression model using stan_polr
 aerial_priority_model <- stan_polr(
   formula = tgt_priority_explanation ~ tgt_industry + country_flying_mission + total_tons + ac_attacking,
-  data = sampled_data,
+  data = sampled_aerial_data,
   method = "logistic",  # Use logistic cumulative link model
   prior = NULL,  # Use default priors to simplify the model
   prior_counts = NULL  # Use default priors for the intercepts

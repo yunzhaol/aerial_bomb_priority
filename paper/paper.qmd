@@ -30,7 +30,7 @@ library(broom)
 
 # Introduction
 
-You can and should cross-reference sections and sub-sections. We use @citeR and @rohan.
+Target selection in WWII aerial campaigns was a crucial aspect that had far-reaching implications for the war’s outcome. This paper aims to dissect the multi-faceted considerations behind target prioritization using Bayesian statistical modeling, providing insights into historical strategies as well as methodological implications for contemporary analysis. We use @citeR and @rohan.
 
 The remainder of this paper is structured as follows. @sec-data....
 
@@ -38,7 +38,7 @@ The remainder of this paper is structured as follows. @sec-data....
 
 # Data {#sec-data}
 
-Some of our data is of penguins (@fig-bills), from @palmerpenguins.
+The data for this study was meticulously curated from declassified military records, comprising numerous raids, their targets, and associated strategic variables.
 
 ```{r}
 #| warning: false
@@ -51,9 +51,9 @@ Some of our data is of penguins (@fig-bills), from @palmerpenguins.
 cleaned_aerial_priority <- read_parquet(here::here("data/analysis_data/cleaned_aerial_priority.parquet"))
 
 # Random sampling if needed
-set.seed(302)
-sampled_data <- cleaned_aerial_priority %>%
-  sample_n(3000)
+set.seed(131)
+sampled_aerial_data <- cleaned_aerial_priority %>%
+  sample_n(5000)
 
 # ces2022_1 |>
 #   head() |>
@@ -70,9 +70,9 @@ sampled_data <- cleaned_aerial_priority %>%
 
 ```
 
-Talk more about it.
+## Variable
 
-And also planes (@fig-planes). (You can change the height and width, but don't worry about doing that until you have finished every other aspect of the paper - Quarto will try to make it look nice and the defaults usually work well once you have enough text.)
+Our analysis focuses on the following variables: target priority, target industry, country of the mission's origin, total tons of bombs dropped, and the number of aircraft partaking in the mission.
 
 ```{r}
 #| label: fig-planes
@@ -86,8 +86,11 @@ And also planes (@fig-planes). (You can change the height and width, but don't w
 ```
 
 ```{r}
-
-# analysis_data |> 
+#| fig-cap: Relationship between wing length and width
+#| echo: false
+#| warning: false
+#| message: false
+# cleaned_aerial_priority |>
 #   ggplot(aes(x = width, y = length)) +
 #   geom_point(alpha = 0.8) +
 #   theme_minimal() +
@@ -95,15 +98,20 @@ And also planes (@fig-planes). (You can change the height and width, but don't w
 #        y = "Wing length (mm)")
 ```
 
-Talk way more about it. 
+## Justification
 
+The selected variables are integral for understanding the strategic matrix that guided target selection, enabling a thorough investigation into the strategic landscape of WWII aerial campaigns.
 
 
 # Model
 
 The goal of our modelling strategy is twofold. Firstly,...
 
-Here we briefly describe the Bayesian analysis model used to investigate... Background details and diagnostics are included in [Appendix -@sec-model-details].
+We constructed a Bayesian ordered logistic regression model to analyze the nuanced hierarchy in target prioritization, utilizing the rstanarm package to accommodate the ordinal nature of target priority levels.
+
+Our model statistically infers the relationship between target priority and various strategic factors, providing a probabilistic assessment of their impacts.
+
+Background details and diagnostics are included in [Appendix -@sec-model-details].
 
 
 ## Model set-up
@@ -131,7 +139,7 @@ We can use maths by including latex between dollar signs, for instance $\theta$.
 
 # Results
 
-Our results are summarized in @tbl-modelresults.
+The analysis revealed distinct patterns in target prioritization, highlighting the role of industry type and the mission’s originating country in determining target selection, while the impact of tonnage and aircraft numbers was relatively subdued. @tbl-modelresults.
 
 ```{r}
 #| echo: false
@@ -161,6 +169,25 @@ prior_summary(aerial_priority_model)
 
 ```
 
+```{r}
+#| eval: true
+#| echo: false
+#| message: false
+#| warning: false
+# Extract model coefficients and their posterior distributions
+posterior <- as.array(aerial_priority_model)
+
+# Set the color scheme for plots
+color_scheme_set("brightblue")
+
+# Plot the credible intervals for model coefficients, focusing on categorical predictors and their impact on ordered levels of priority
+mcmc_intervals(posterior, pars = c("tgt_industryunidentified targets", "country_flying_missionusa"), prob = 0.9) +
+  labs(title = "Credible Intervals for Model Coefficients",
+       subtitle = "90% Credible Intervals showcasing the influence of categorical predictors on ordered priority levels",
+       x = "Coefficient Estimate",
+       y = "Parameters")
+
+```
 
 
 
@@ -168,7 +195,7 @@ prior_summary(aerial_priority_model)
 
 ## First discussion point {#sec-first-point}
 
-If my paper were 10 pages, then should be be at least 2.5 pages. The discussion is a chance to show off what you know and what you learnt from all this. 
+The implications of our study stretch beyond historical curiosity, offering a lens through which modern strategic decisions can be evaluated, and the methodology refined.
 
 ## Second discussion point
 

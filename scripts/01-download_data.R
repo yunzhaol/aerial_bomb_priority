@@ -22,6 +22,7 @@ aerial_priority <-
 #### Save data ####
 # change the_raw_data to whatever name you assigned when you downloaded it.
 write_parquet(aerial_priority, "data/raw_data/aerial_priority.parquet") 
+write_csv(aerial_priority, "data/raw_data/aerial_priority.csv") 
 
 
 
