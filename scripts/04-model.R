@@ -10,8 +10,6 @@
 library(rstanarm)  # Load the rstanarm package for Bayesian modeling
 library(arrow)     # Load the arrow package to read Parquet files
 library(dplyr)
-library(ggplot2)
-library(modelsummary)
 
 #### Read data ####
 cleaned_aerial_priority <- read_parquet("data/analysis_data/cleaned_aerial_priority.parquet")
@@ -22,6 +20,17 @@ cleaned_aerial_priority <- read_parquet("data/analysis_data/cleaned_aerial_prior
 set.seed(302)
 sampled_data <- cleaned_aerial_priority %>%
   sample_n(1000)
+
+# Ensure the response is an ordered factor
+sampled_data$tgt_priority_explanation <- factor(
+  sampled_data$tgt_priority_explanation,
+  levels = c("target of last resort", "target of opportunity", "secondary target", "primary target"),
+  ordered = TRUE
+)
+
+# Convert categorical predictors to factors
+sampled_data$tgt_industry <- factor(sampled_data$tgt_industry)
+sampled_data$country_flying_mission <- factor(sampled_data$country_flying_mission)
 
 # Build a Bayesian ordered logistic regression model using stan_polr
 aerial_priority_model <- stan_polr(
@@ -38,21 +47,6 @@ print(summary(aerial_priority_model))
 # Optional: Plot the effects to visualize the model results
 plot(aerial_priority_model)
 
-prior_summary(aerial_priority_model)
-
-pp_check(aerial_priority_model) +
-  theme_classic() +
-  theme(legend.position = "bottom")
-
-posterior_vs_prior(aerial_priority_model) +
-  theme_minimal() +
-  scale_color_brewer(palette = "Set1") +
-  theme(legend.position = "bottom") +
-  coord_flip()
-
-plot(aerial_priority_model, "trace")
-
-plot(aerial_priority_model, "rhat")
 
 #### Save model ####
 saveRDS(
