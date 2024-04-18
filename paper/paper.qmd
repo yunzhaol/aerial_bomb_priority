@@ -26,17 +26,18 @@ library(bayesplot)
 ```
 
 
-# Introduction
+# Introduction {#sec-intro}
 
-World War II reshaped global power dynamics, with the strategic aerial bombing campaigns playing a crucial role in determining the outcome of the conflict. The Allied forces’ focused bombardment of German industries was pivotal, aiming to dismantle the economic backbone essential for Germany's war efforts. While considerable research has been conducted on the impact of these bombings, less attention has been given to the systematic selection process behind targeting specific industrial assets. This paper addresses this understudied aspect by exploring the intricate decision-making process that guided the Allied forces in targeting German industries.
+World War II reshaped global power dynamics, with the strategic aerial bombing campaigns playing a crucial role in determining the outcome of the conflict. The Allied forces’ focused bombardment of German industries was pivotal, aiming to dismantle the economic backbone essential for Germany's war efforts. While considerable research, such as Pape's analysis of strategic bombing's effectiveness [@Pape1996], has been conducted on the impact of these bombings, less attention has been given to the systematic selection process behind targeting specific industrial assets. This paper addresses this understudied aspect by exploring the intricate decision-making process that guided the Allied forces in targeting German industries [@Overy2013].
 
-The crux of this research lies in a detailed examination of a sampled subset of over 5,000 missions from comprehensive wartime records, representing a strategic selection designed to analyze the impact of various factors on target prioritization. These factors include the type of industry targeted, the leading country of the mission, the volume of bombs dropped, and the scale of aircraft involvement. Prior literature has often provided broad overviews without delving into the interplay of these specific variables. By applying a Bayesian ordered logistic regression model, this study meticulously quantifies the influence of each factor, offering a clearer picture of the strategic considerations that shaped the Allied bombing strategy.
+The crux of this research lies in a detailed examination of a sampled subset of over 5,000 missions from comprehensive wartime records, representing a strategic selection designed to analyze the impact of various factors on target prioritization. These factors include the type of industry targeted, the leading country of the mission, the volume of bombs dropped, and the scale of aircraft involvement. Prior literature, such as studies by Grey [@Grey1999], has often provided broad overviews without delving into the interplay of these specific variables. By applying a Bayesian ordered logistic regression model, this study meticulously quantifies the influence of each factor, offering a clearer picture of the strategic considerations that shaped the Allied bombing strategy.
 
 Our findings indicate a deliberate emphasis on disabling critical oil refineries and other vital industrial infrastructures, which were deemed essential for sustaining the German war machine. The analysis underscores that missions with larger bomb payloads and more aircraft were preferentially deployed against these high-value targets. This targeted approach was strategic, aiming not just at destruction but at crippling Germany’s ability to sustain its military operations effectively.
 
-The significance of these insights extends beyond the historical narrative of World War II, offering lessons on the allocation of military resources and strategic target selection that are relevant to modern military strategies. Furthermore, this paper enriches the ongoing academic debate about the strategic efficacy and ethical considerations of aerial bombing in warfare. 
+The significance of these insights extends beyond the historical narrative of World War II, offering lessons on the allocation of military resources and strategic target selection that are relevant to modern military strategies. Furthermore, this paper enriches the ongoing academic debate about the strategic efficacy and ethical considerations of aerial bombing in warfare, as discussed in broader terms by scholars like Biddle [@Biddle2002] and Morrow [@Morrow2004].
+ 
 
-The paper is organized to provide a clear and detailed examination of the strategic target prioritization during World War II aerial campaigns. Following the introduction in @sec-intro, @sec-data outlines the data employed in the study, describing the sources of historical military data, the variables selected for analysis, and the rationale behind these choices. @sec-result presents the findings from the Bayesian ordered logistic regression model, detailing how different factors such as target industry and mission country influenced the prioritization of targets. @sec-discussion delves deeper into these results, discussing the strategic implications of the findings, the limitations of the current study, and suggesting avenues for future research to expand upon the insights gained.
+The paper is organized to provide a clear and detailed examination of the strategic target prioritization during World War II aerial campaigns. Following the introduction in @sec-intro, @sec-data outlines the data employed in the study, describing the sources of historical military data, the variables selected for analysis, and the rationale behind these choices. @sec-model introduces the Bayesian ordered logistic regression model employed to analyze the relationships between our variables of interest, providing a statistical framework for understanding the strategic decisions behind target prioritization during World War II aerial campaigns. @sec-result presents the findings from the Bayesian ordered logistic regression model, detailing how different factors such as target industry and mission country influenced the prioritization of targets. @sec-discussion delves deeper into these results, discussing the strategic implications of the findings, the limitations of the current study, and suggesting avenues for future research to expand upon the insights gained. @sec-model-details shows plots for Posterior predictive check and Diagnostics and their analysis.
 
 [@citeR], [@arrow], [@knitr], [@rstanarm], [@tidyverse], [@ggplot2], [@bayesplot], [@janitor], [@dplyr], [@tellingstories]
 
@@ -67,9 +68,11 @@ cleaned_aerial_priority |>
 ```
 
 ```{r}
-#| label: fig-industry and country by priority
+#| label: fig-industry_country
 #| fig-cap: Distribution of target industry and country in mission by Priority
 #| echo: false
+#| fig.width: 8
+#| fig.height: 6
 
 # Update the color set based on the new requirements
 priority_colors <- c("primary target" = "#FF0000",
@@ -98,8 +101,8 @@ print(plot_industry_country)
 ```
 
 ```{r}
-#| label: bomb tons and fig-aircraft attacking by priority
-#| fig-cap: Distribution of target industry and country in mission by Priority
+#| label: fig_aircrafts
+#| fig-cap: Distribution of aircrafts by Priority
 #| echo: false
 
 # Define the specified colors for each priority level
@@ -121,6 +124,13 @@ plot_aircraft_attack <- ggplot(cleaned_aerial_priority, aes(x = aircraft_attack,
   ) +
   theme(legend.position = "bottom")
 
+print(plot_aircraft_attack)
+```
+
+```{r}
+#| label: fig_bomb
+#| fig-cap: Distribution of bomb tons by Priority
+#| echo: false
 # Create a scatter plot for bomb_tons
 plot_bomb_tons <- ggplot(cleaned_aerial_priority, aes(x = bomb_tons, y = tgt_priority, color = tgt_priority)) +
   geom_jitter(width = 0.1, height = 0.1, size = 3, alpha = 0.6) +
@@ -134,7 +144,6 @@ plot_bomb_tons <- ggplot(cleaned_aerial_priority, aes(x = bomb_tons, y = tgt_pri
   ) +
   theme(legend.position = "bottom")
 
-print(plot_aircraft_attack)
 print(plot_bomb_tons)
 
 ```
@@ -173,7 +182,7 @@ Our analysis focuses on the following variables: target priority, target industr
 The selected variables are integral for understanding the strategic matrix that guided target selection, enabling a thorough investigation into the strategic landscape of WWII aerial campaigns.
 
 
-# Model
+# Model {#sec-model}
 
 The goal of our modelling strategy is twofold. F
 This study employs a Bayesian ordered logistic regression model to analyze the priorities assigned to different target industries during aerial bombing missions in World War II. 
@@ -209,7 +218,7 @@ We expect a positive relationship between the size of the wings and time spent a
 We can use maths by including latex between dollar signs, for instance $\theta$.
 
 
-# Results
+# Results {#sec-result}
 
 The analysis revealed distinct patterns in target prioritization, highlighting the role of industry type and the mission’s originating country in determining target selection, while the impact of tonnage and aircraft numbers was relatively subdued. @tbl-model_summary.
 
@@ -287,6 +296,7 @@ The model's intercept terms serve to baseline the log-odds of the priority class
 #| message: false
 #| warning: false
 
+
 # Extract posterior arrays for the model coefficients
 posterior <- as.array(aerial_priority_model)
 
@@ -296,10 +306,14 @@ color_scheme_set("brightblue")
 # Plot the 90% credible intervals for all model coefficients
 # This visualizes the impact of each predictor on the ordered priority levels
 mcmc_intervals(posterior, prob = 0.9) +
-  labs(title = "Credible Intervals for Model Coefficients",
-       subtitle = "90% credible intervals demonstrating the influence of predictors on ordered priority levels",
+  labs(title = "Model Coefficients",
+       subtitle = "90% credible intervals",
        x = "Coefficient Estimate",
-       y = "Parameters")
+       y = "Parameters")+
+  theme(
+    plot.title = element_text(hjust = 0.5),    # Center the main title
+    plot.subtitle = element_text(hjust = 0.5)  # Center the subtitle
+  )
 
 ```
 
@@ -315,7 +329,7 @@ These findings underscore the strategic considerations that guided the Allies' t
 
 
 
-# Discussion
+# Discussion {#sec-discussion}
 
 This paper has initiated an inquiry into the labyrinth of decision-making within the Allied bombing strategy of World War II, applying a Bayesian ordered logistic regression model to discern the prioritization of targets. By selectively incorporating a subset of variables available in a rich dataset, the study uncovers patterns that delineate strategic imperatives from the vast array of aerial operations data.
 
@@ -416,6 +430,7 @@ The parameters include various target industries, countries of mission, and othe
 #| echo: false
 #| message: false
 #| warning: false
+#| fig.width: 8
 
 # Extract the posterior distribution for all model coefficients
 posterior <- as.array(aerial_priority_model)
