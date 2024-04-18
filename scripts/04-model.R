@@ -23,7 +23,7 @@ sampled_aerial_data <- cleaned_aerial_priority %>%
 
 # Build a Bayesian ordered logistic regression model using stan_polr
 aerial_priority_model <- stan_polr(
-  formula = tgt_priority_explanation ~ tgt_industry + country_flying_mission + total_tons + ac_attacking,
+  formula = tgt_priority ~ tgt_industry + country_mission + bomb_tons + aircraft_attack,
   data = sampled_aerial_data,
   method = "logistic",  # Use logistic cumulative link model
   prior = NULL,  # Use default priors to simplify the model

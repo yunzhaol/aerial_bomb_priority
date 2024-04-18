@@ -5,7 +5,7 @@ author:
 thanks: "Code and data are available at: https://github.com/yunzhaol/aerial_bomb_priority.git."
 date: today
 date-format: long
-abstract: "First sentence. Second sentence. Third sentence. Fourth sentence."
+abstract: "During World War II, the strategic decisions about where and how the Allies bombed German industries played a crucial role in the Allied campaign. This study employs Bayesian ordered logistic regression to methodically analyze how different factors—such as the industry type, the launching country, the bomb load, and the number of aircraft—shaped these decisions. Focusing on the preference for targeting crucial oil refineries, the analysis sheds light on the calculated approach to disrupt Germany's war capabilities effectively. The insights from this research not only clarify the strategic rationale behind the Allies' bombing priorities but also enhance our understanding of their impact on the course of the war."
 format: pdf
 number-sections: true
 bibliography: references.bib
@@ -16,6 +16,7 @@ bibliography: references.bib
 #| warning: false
 #| message: false
 
+#### Workspace setup ####
 library(arrow)
 library(knitr)
 library(kableExtra)
@@ -25,15 +26,24 @@ library(tidyverse)
 library(ggplot2)
 library(bayesplot)
 library(broom)
+library(gridExtra)
 ```
 
 
 # Introduction
 
-Target selection in WWII aerial campaigns was a crucial aspect that had far-reaching implications for the war’s outcome. This paper aims to dissect the multi-faceted considerations behind target prioritization using Bayesian statistical modeling, providing insights into historical strategies as well as methodological implications for contemporary analysis. We use @citeR and @rohan.
+World War II reshaped global power dynamics, with the strategic aerial bombing campaigns playing a crucial role in determining the outcome of the conflict. The Allied forces’ focused bombardment of German industries was pivotal, aiming to dismantle the economic backbone essential for Germany's war efforts. While considerable research has been conducted on the impact of these bombings, less attention has been given to the systematic selection process behind targeting specific industrial assets. This paper addresses this understudied aspect by exploring the intricate decision-making process that guided the Allied forces in targeting German industries.
+
+The crux of this research lies in a detailed examination of a sampled subset of over 5,000 missions from comprehensive wartime records, representing a strategic selection designed to analyze the impact of various factors on target prioritization. These factors include the type of industry targeted, the leading country of the mission, the volume of bombs dropped, and the scale of aircraft involvement. Prior literature has often provided broad overviews without delving into the interplay of these specific variables. By applying a Bayesian ordered logistic regression model, this study meticulously quantifies the influence of each factor, offering a clearer picture of the strategic considerations that shaped the Allied bombing strategy.
+
+Our findings indicate a deliberate emphasis on disabling critical oil refineries and other vital industrial infrastructures, which were deemed essential for sustaining the German war machine. The analysis underscores that missions with larger bomb payloads and more aircraft were preferentially deployed against these high-value targets. This targeted approach was strategic, aiming not just at destruction but at crippling Germany’s ability to sustain its military operations effectively.
+
+The significance of these insights extends beyond the historical narrative of World War II, offering lessons on the allocation of military resources and strategic target selection that are relevant to modern military strategies. Furthermore, this paper enriches the ongoing academic debate about the strategic efficacy and ethical considerations of aerial bombing in warfare. 
 
 The remainder of this paper is structured as follows. @sec-data....
 
+[@citeR], [@R-arrow], [@R-knitr], [@R-kableExtra], [@R-modelsummary], [@R-rstanarm], [@R-tidyverse], [@R-ggplot2], [@R-bayesplot], [@R-broom], [@R-gridExtra], [@R-janitor], [@R-dplyr], [@tellingstories]
+@citeR.
 
 
 # Data {#sec-data}
@@ -45,7 +55,7 @@ The data for this study was meticulously curated from declassified military reco
 #| message: false
 #| echo: false
 #| label: tbl-cesdata1
-#| tbl-cap: "2022 CES (Cooperative Election Study) Data (Cultural)"
+#| tbl-cap: "Aerial Bombing missions against Germany on the main target industries in WWII "
 
 # Load in data
 cleaned_aerial_priority <- read_parquet(here::here("data/analysis_data/cleaned_aerial_priority.parquet"))
@@ -55,20 +65,85 @@ set.seed(131)
 sampled_aerial_data <- cleaned_aerial_priority %>%
   sample_n(5000)
 
-# ces2022_1 |>
-#   head() |>
-#   kable(
-#     col.names = c("Voted For (2020)", "Age Group", "Gender", "Education", "Race", "Religion"),
-#     booktabs = TRUE
-  # )
+cleaned_aerial_priority |>
+  head() |>
+  kable(booktabs = TRUE, align = "c"
+)
 ```
 
 ```{r}
-#| label: fig-bills
-#| fig-cap: Bills of penguins
+#| label: fig-industry and country by priority
+#| fig-cap: Distribution of target industry and country in mission by Priority
 #| echo: false
 
+# Update the color set based on the new requirements
+priority_colors <- c("primary target" = "#FF0000",
+                     "secondary target" = "#00BA38",
+                     "target of opportunity" = "#619CFF",
+                     "target of last resort" = "coral")  
+
+# Convert country_mission to uppercase
+cleaned_aerial_priority$country_mission <- toupper(cleaned_aerial_priority$country_mission)
+
+# Create plot for tgt_industry
+plot_industry_country <- ggplot(cleaned_aerial_priority, aes(x = tgt_industry, fill = tgt_priority)) +
+  geom_bar(position = "stack") +  # Use stack position to layer the colors in one bar
+  scale_fill_manual(values = priority_colors) +
+  theme_minimal() +
+  labs(
+    title = "Distribution of Target Industry and Country in Mission by Priority",
+    x = "Target Industry",
+    y = "Count",
+    fill = "Target Priority"
+  ) +
+  facet_wrap(vars(country_mission), scales = "free_x") + # Facet by country mission
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),  # Rotate x labels for clarity
+        legend.position = "bottom")
+print(plot_industry_country)
 ```
+
+```{r}
+#| label: bomb tons and fig-aircraft attacking by priority
+#| fig-cap: Distribution of target industry and country in mission by Priority
+#| echo: false
+
+# Define the specified colors for each priority level
+priority_colors <- c("primary target" = "#FF0000",  # Red
+                     "secondary target" = "#00BA38",  # Green
+                     "target of opportunity" = "#619CFF",  # Blue
+                     "target of last resort" = "#FF7F50")  # Coral
+
+# Create a scatter plot for aircraft_attack
+plot_aircraft_attack <- ggplot(cleaned_aerial_priority, aes(x = aircraft_attack, y = tgt_priority, color = tgt_priority)) +
+  geom_jitter(width = 0.1, height = 0.1, size = 3, alpha = 0.6) +
+  scale_color_manual(values = priority_colors) +
+  theme_minimal() +
+  labs(
+    title = "Aircraft Attack Colored by Target Priority",
+    x = "Aircraft Attack",
+    y = "Target Priority",
+    color = "Target Priority"
+  ) +
+  theme(legend.position = "bottom")
+
+# Create a scatter plot for bomb_tons
+plot_bomb_tons <- ggplot(cleaned_aerial_priority, aes(x = bomb_tons, y = tgt_priority, color = tgt_priority)) +
+  geom_jitter(width = 0.1, height = 0.1, size = 3, alpha = 0.6) +
+  scale_color_manual(values = priority_colors) +
+  theme_minimal() +
+  labs(
+    title = "Bomb Tons Colored by Target Priority",
+    x = "Bomb Tons",
+    y = "Target Priority",
+    color = "Target Priority"
+  ) +
+  theme(legend.position = "bottom")
+
+print(plot_aircraft_attack)
+print(plot_bomb_tons)
+
+```
+
 
 ## Variable
 
@@ -105,9 +180,12 @@ The selected variables are integral for understanding the strategic matrix that 
 
 # Model
 
-The goal of our modelling strategy is twofold. Firstly,...
+The goal of our modelling strategy is twofold. F
+This study employs a Bayesian ordered logistic regression model to analyze the priorities assigned to different target industries during aerial bombing missions in World War II. 
 
-We constructed a Bayesian ordered logistic regression model to analyze the nuanced hierarchy in target prioritization, utilizing the rstanarm package to accommodate the ordinal nature of target priority levels.
+The model integrates several predictors including the type of target industry (`tgt_industry`), the country executing the mission (`country_mission`), the tonnage of bombs dropped (`bomb_tons`), and the number of aircraft involved in the attack (`aircraft_attack`). 
+
+The model uses a logistic cumulative link function, draws on a posterior sample size of 4000, and is based on a total of 5000 observations, utilizing the rstanarm package to accommodate the ordinal nature of target priority levels.
 
 Our model statistically infers the relationship between target priority and various strategic factors, providing a probabilistic assessment of their impacts.
 
@@ -163,7 +241,6 @@ aerial_priority_model <-
 print(summary(aerial_priority_model))
 
 # Optional: Plot the effects to visualize the model results
-plot(aerial_priority_model)
 
 prior_summary(aerial_priority_model)
 
@@ -174,18 +251,44 @@ prior_summary(aerial_priority_model)
 #| echo: false
 #| message: false
 #| warning: false
-# Extract model coefficients and their posterior distributions
+# Extract posterior arrays for the model coefficients
 posterior <- as.array(aerial_priority_model)
 
-# Set the color scheme for plots
+# Set a color scheme for the plots
 color_scheme_set("brightblue")
 
-# Plot the credible intervals for model coefficients, focusing on categorical predictors and their impact on ordered levels of priority
-mcmc_intervals(posterior, pars = c("tgt_industryunidentified targets", "country_flying_missionusa"), prob = 0.9) +
+# Plot the 90% credible intervals for all model coefficients
+# This visualizes the impact of each predictor on the ordered priority levels
+mcmc_intervals(posterior, prob = 0.9) +
   labs(title = "Credible Intervals for Model Coefficients",
-       subtitle = "90% Credible Intervals showcasing the influence of categorical predictors on ordered priority levels",
+       subtitle = "90% credible intervals demonstrating the influence of predictors on ordered priority levels",
        x = "Coefficient Estimate",
        y = "Parameters")
+
+```
+
+The Bayesian ordered logistic regression model's estimates are visualized in Figure X. Each point in the plot represents the posterior mean effect size of the predictor variables on the target priority ranking, while the lines indicate the 95% credible intervals. The estimates reveal several key insights into the Allied bombing strategy:
+
+- The variable `tgt_industrySynthetic Oil Refineries` exhibits the largest positive effect, suggesting that synthetic oil refineries were assigned the highest priority for bombing missions, in line with the strategic objective to disrupt the German war effort's fuel supply.
+- In contrast, the effects associated with `tgt_industryRailway Infrastructure` and `tgt_industryUrban Areas` are closer to zero, indicating a lower priority relative to other types of targets. This aligns with a strategy that placed less emphasis on disrupting transportation and civilian structures.
+- Regarding the country of mission execution, `country_missionusa` shows a significant positive effect, reflecting the United States' prominent role in the strategic bombing campaign against Germany.
+- The effects of `bomb_tons` and `aircraft_attack` are positive, suggesting that missions with greater bomb tonnage and more aircraft tend to have a higher target priority, possibly reflecting the allocation of resources to strategically important missions.
+
+These findings underscore the strategic considerations that guided the Allies' targeting decisions during World War II, highlighting the emphasis on industrial targets critical to the German war machine.
+
+
+
+```{r}
+#| eval: true
+#| echo: false
+#| message: false
+#| warning: false
+# Plot posterior distributions for selected parameters that influence priority levels
+mcmc_areas(posterior, pars = c("tgt_industryunidentified targets", "country_missionusa")) +
+  labs(title = "Posterior Distributions of Selected Parameters",
+       subtitle = "Focusing on how categorical predictors without inherent order affect the ordered target priority",
+       x = "Parameter Value",
+       y = "Density")
 
 ```
 

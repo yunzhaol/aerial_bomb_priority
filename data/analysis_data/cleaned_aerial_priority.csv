@@ -1,4 +1,4 @@
-tgt_priority_explanation,tgt_industry,country_flying_mission,total_tons,ac_attacking
+tgt_priority,tgt_industry,country_mission,bomb_tons,aircraft_attack
 secondary target,railway infrastructure,usa,42,17
 secondary target,railway infrastructure,usa,20,8
 target of last resort,unidentified targets,usa,3,1
