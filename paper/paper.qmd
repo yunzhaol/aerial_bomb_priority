@@ -39,8 +39,14 @@ The significance of these insights extends beyond the historical narrative of Wo
 
 The paper is organized to provide a clear and detailed examination of the strategic target prioritization during World War II aerial campaigns. Following the introduction in @sec-intro, @sec-data outlines the data employed in the study, describing the sources of historical military data, the variables selected for analysis, and the rationale behind these choices. @sec-model introduces the Bayesian ordered logistic regression model employed to analyze the relationships between our variables of interest, providing a statistical framework for understanding the strategic decisions behind target prioritization during World War II aerial campaigns. @sec-result presents the findings from the Bayesian ordered logistic regression model, detailing how different factors such as target industry and mission country influenced the prioritization of targets. @sec-discussion delves deeper into these results, discussing the strategic implications of the findings, the limitations of the current study, and suggesting avenues for future research to expand upon the insights gained. @sec-model-details shows plots for Posterior predictive check and Diagnostics and their analysis.
 
+## Estimand
+
+This study aims to estimate the strategic priorities that guided the Allied forces in their aerial bombing campaigns against German industries during World War II. By analyzing various factors such as the type of industry targeted, the country leading the mission, the tonnage of bombs dropped, and the number of aircraft involved, this research seeks to understand how these variables influenced the decision-making processes regarding target selection. The core goal is to determine the causal effect of these factors on the prioritization of bombing targets, thereby shedding light on how strategic necessities, resource availability, and tactical choices shaped the wartime operations.
+
 
 # Data {#sec-data}
+
+## Measurement
 
 The dataset used in this study was sourced from [Data World](https://data.world/datamil/world-war-ii-thor-data), which hosts comprehensive records from the Theater History of Operations (THOR) dataset, documenting aerial bombings during World War II. Originally consisting of approximately 178,282 records, the dataset underwent significant preprocessing to align with the specific focus of this research. The initial step involved filtering out records where the target location was not Germany, reducing the dataset to 64,948 entries. These records form the basis of the analysis, having been retained for detailed examination and modeling of strategic bombing patterns and their impacts.
 
