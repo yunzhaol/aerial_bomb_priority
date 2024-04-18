@@ -20,7 +20,6 @@ cleaned_aerial_priority <- read_parquet("data/analysis_data/cleaned_aerial_prior
 set.seed(131)
 sampled_aerial_data <- cleaned_aerial_priority %>%
   sample_n(5000)
-
 # Build a Bayesian ordered logistic regression model using stan_polr
 aerial_priority_model <- stan_polr(
   formula = tgt_priority ~ tgt_industry + country_mission + bomb_tons + aircraft_attack,

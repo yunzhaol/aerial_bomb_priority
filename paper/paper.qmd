@@ -19,14 +19,10 @@ bibliography: references.bib
 #### Workspace setup ####
 library(arrow)
 library(knitr)
-library(kableExtra)
-library(modelsummary)
 library(rstanarm)
 library(tidyverse)
 library(ggplot2)
 library(bayesplot)
-library(broom)
-library(gridExtra)
 ```
 
 
@@ -40,10 +36,9 @@ Our findings indicate a deliberate emphasis on disabling critical oil refineries
 
 The significance of these insights extends beyond the historical narrative of World War II, offering lessons on the allocation of military resources and strategic target selection that are relevant to modern military strategies. Furthermore, this paper enriches the ongoing academic debate about the strategic efficacy and ethical considerations of aerial bombing in warfare. 
 
-The remainder of this paper is structured as follows. @sec-data....
+The paper is organized to provide a clear and detailed examination of the strategic target prioritization during World War II aerial campaigns. Following the introduction in @sec-intro, @sec-data outlines the data employed in the study, describing the sources of historical military data, the variables selected for analysis, and the rationale behind these choices. @sec-result presents the findings from the Bayesian ordered logistic regression model, detailing how different factors such as target industry and mission country influenced the prioritization of targets. @sec-discussion delves deeper into these results, discussing the strategic implications of the findings, the limitations of the current study, and suggesting avenues for future research to expand upon the insights gained.
 
-[@citeR], [@R-arrow], [@R-knitr], [@R-kableExtra], [@R-modelsummary], [@R-rstanarm], [@R-tidyverse], [@R-ggplot2], [@R-bayesplot], [@R-broom], [@R-gridExtra], [@R-janitor], [@R-dplyr], [@tellingstories]
-@citeR.
+[@citeR], [@arrow], [@knitr], [@rstanarm], [@tidyverse], [@ggplot2], [@bayesplot], [@janitor], [@dplyr], [@tellingstories]
 
 
 # Data {#sec-data}
@@ -197,12 +192,11 @@ Background details and diagnostics are included in [Appendix -@sec-model-details
 Define $y_i$ as the number of seconds that the plane remained aloft. Then $\beta_i$ is the wing width and $\gamma_i$ is the wing length, both measured in millimeters.  
 
 \begin{align} 
-y_i|\mu_i, \sigma &\sim \mbox{Normal}(\mu_i, \sigma) \\
-\mu_i &= \alpha + \beta_i + \gamma_i\\
-\alpha &\sim \mbox{Normal}(0, 2.5) \\
-\beta &\sim \mbox{Normal}(0, 2.5) \\
-\gamma &\sim \mbox{Normal}(0, 2.5) \\
-\sigma &\sim \mbox{Exponential}(1)
+y_i &\sim \mbox{OrderedLogistic}(\eta_i, \boldsymbol{\kappa}) \\
+\eta_i &= \beta_{\text{tgt\_industry}} \times \text{tgt\_industry}_i + \beta_{\text{country\_mission}} \times \text{country\_mission}_i \\
+&\quad + \beta_{\text{bomb\_tons}} \times \text{bomb\_tons}_i + \beta_{\text{aircraft\_attack}} \times \text{aircraft\_attack}_i \\
+\boldsymbol{\beta} &\sim \mbox{Normal}(0, 10) \text{ (default non-informative prior)} \\
+\boldsymbol{\kappa} &\sim \mbox{Normal}(0, 5) \text{ (default prior for cutpoints)}
 \end{align}
 
 We run the model in R [@citeR] using the `rstanarm` package of @rstanarm. We use the default priors from `rstanarm`.
@@ -217,7 +211,7 @@ We can use maths by including latex between dollar signs, for instance $\theta$.
 
 # Results
 
-The analysis revealed distinct patterns in target prioritization, highlighting the role of industry type and the mission’s originating country in determining target selection, while the impact of tonnage and aircraft numbers was relatively subdued. @tbl-modelresults.
+The analysis revealed distinct patterns in target prioritization, highlighting the role of industry type and the mission’s originating country in determining target selection, while the impact of tonnage and aircraft numbers was relatively subdued. @tbl-model_summary.
 
 ```{r}
 #| echo: false
@@ -232,25 +226,67 @@ aerial_priority_model <-
 
 ```{r}
 #| echo: false
-#| eval: true
-#| label: tbl-modelresults
-#| tbl-cap: "Explanatory models of flight time based on wing width and wing length"
+#| eval: false
 #| warning: false
 
 # Print the summary of the model to inspect the results
 print(summary(aerial_priority_model))
-
-# Optional: Plot the effects to visualize the model results
-
 prior_summary(aerial_priority_model)
 
 ```
 
 ```{r}
+#| echo: false
+#| eval: true
+#| label: tbl-model_summary
+#| tbl-cap: The model's coefficient summary
+#| warning: false
+#| message: false
+
+# Create a data frame containing the model's coefficient summary
+model_summary_df <- data.frame(
+  Parameter = c(
+    'Railway infrastructure',
+    'Synthetic oil refineries',
+    'Unidentified targets',
+    'Urban areas',
+    'Other countries',
+    'USA',
+    'Bomb',
+    'Aircraft',
+    'Intercept 1 (last resort|opportunity)',
+    'Intercept 2 (opportunity|secondary)',
+    'Intercept 3 (secondary|primary)'
+  ),
+  Mean = c(-1.4, -0.1, -3.4, -1.4, 0.8, 0.9, 0.0, 0.1, -3.7, -1.0, 0.4),
+  SD = c(0.1, 0.1, 0.1, 0.1, 0.3, 0.3, 0.0, 0.0, 0.4, 0.3, 0.3),
+  `10%` = c(-1.6, -0.2, -3.5, -1.6, 0.4, 0.5, 0.0, 0.1, -4.1, -1.4, 0.0),
+  `50%` = c(-1.4, -0.1, -3.4, -1.4, 0.8, 0.9, 0.0, 0.1, -3.7, -1.0, 0.4),
+  `90%` = c(-1.3, 0.1, -3.2, -1.3, 1.2, 1.3, 0.0, 0.1, -3.2, -0.5, 0.9)
+)
+
+# Use kable to create and style the table
+kable(model_summary_df, format = "markdown", align = 'c', col.names = c("Parameter", "Mean", "SD", "10%", "50%", "90%"))
+
+```
+
+As detailed in @tbl-model_summary, the coefficient summary quantitatively reflects the strategic emphases placed on various targets during World War II aerial bombings. For instance, the estimated coefficient for `Unidentified targets` is notably negative (Mean = -3.4), suggesting a strategic de-emphasis on these targets in comparison to other types. 
+
+Conversely, `USA`-led missions are associated with a positive coefficient (Mean = 0.9), indicating a higher probability of such missions targeting high-priority objectives. This aligns with the historical context of the USA's significant role in the strategic bombing campaign. The coefficient for `Other countries` is marginally lower (Mean = 0.8), subtly reflecting the diverse strategic approaches among the Allied forces.
+
+The model's intercept terms serve to baseline the log-odds of the priority classifications, ranging from `Intercept 1 (last resort|opportunity)` with a mean of -3.7 to `Intercept 3 (secondary|primary)` with a mean of 0.4. These intercepts delineate the inherent ordering of target priority levels within the model, with higher intercepts corresponding to a higher likelihood of a target being deemed of primary importance.
+
+
+
+
+```{r}
+#| label: fig-model_coefficients
+#| fig-cap: The 90% credible intervals for all model coefficients
 #| eval: true
 #| echo: false
 #| message: false
 #| warning: false
+
 # Extract posterior arrays for the model coefficients
 posterior <- as.array(aerial_priority_model)
 
@@ -267,7 +303,7 @@ mcmc_intervals(posterior, prob = 0.9) +
 
 ```
 
-The Bayesian ordered logistic regression model's estimates are visualized in Figure X. Each point in the plot represents the posterior mean effect size of the predictor variables on the target priority ranking, while the lines indicate the 95% credible intervals. The estimates reveal several key insights into the Allied bombing strategy:
+The Bayesian ordered logistic regression model's estimates are visualized in @fig-model_coefficients. Each point in the plot represents the posterior mean effect size of the predictor variables on the target priority ranking, while the lines indicate the 95% credible intervals. The estimates reveal several key insights into the Allied bombing strategy:
 
 - The variable `tgt_industrySynthetic Oil Refineries` exhibits the largest positive effect, suggesting that synthetic oil refineries were assigned the highest priority for bombing missions, in line with the strategic objective to disrupt the German war effort's fuel supply.
 - In contrast, the effects associated with `tgt_industryRailway Infrastructure` and `tgt_industryUrban Areas` are closer to zero, indicating a lower priority relative to other types of targets. This aligns with a strategy that placed less emphasis on disrupting transportation and civilian structures.
@@ -278,35 +314,34 @@ These findings underscore the strategic considerations that guided the Allies' t
 
 
 
-```{r}
-#| eval: true
-#| echo: false
-#| message: false
-#| warning: false
-# Plot posterior distributions for selected parameters that influence priority levels
-mcmc_areas(posterior, pars = c("tgt_industryunidentified targets", "country_missionusa")) +
-  labs(title = "Posterior Distributions of Selected Parameters",
-       subtitle = "Focusing on how categorical predictors without inherent order affect the ordered target priority",
-       x = "Parameter Value",
-       y = "Density")
-
-```
-
-
 
 # Discussion
 
-## First discussion point {#sec-first-point}
+This paper has initiated an inquiry into the labyrinth of decision-making within the Allied bombing strategy of World War II, applying a Bayesian ordered logistic regression model to discern the prioritization of targets. By selectively incorporating a subset of variables available in a rich dataset, the study uncovers patterns that delineate strategic imperatives from the vast array of aerial operations data.
 
-The implications of our study stretch beyond historical curiosity, offering a lens through which modern strategic decisions can be evaluated, and the methodology refined.
+## Comprehensive Understanding of Target Selection {#sec-first-point}
 
-## Second discussion point
+In this study, key variables such as target industry, country flying mission, bomb tons, and aircraft attacking were carefully selected based on their demonstrated strong correlation with target priority. This choice was guided by historical and strategic relevance, ensuring that the model reflects real-world considerations. The quantitative analysis substantiates the critical impact of these variables on strategic military decisions, revealing how different target industries were prioritized based on their role in the war effort. For instance, industries crucial to the enemy's war logistics, such as oil refineries, were often prioritized to cripple the enemy's ability to sustain military operations. This not only aligns with historical records but also provides a granular insight into the decision-making processes, illustrating the careful balancing act between achieving strategic objectives and managing resources effectively during the war.
 
-## Third discussion point
+## Strategic Implications of Variable Selection
 
-## Weaknesses and next steps
+The selection of variables was underpinned by a rigorous set of criteria that prioritized data completeness, the feasibility of clustering, and the strategic relevance of each variable. This methodological rigor was intended to mitigate any biases that might arise from incomplete or noisy data and to ensure that the analysis could stand up to academic and practical scrutiny. For example, while variables like THEATER or TGT_TYPE were initially considered due to their strategic importance, they were ultimately excluded from the final model due to data sparsity and the complexities associated with their categorization. This exclusion was a strategic decision aimed at enhancing the robustness and interpretability of the model, focusing on variables that offered clear, actionable insights. The chosen variables had well-defined, interpretable categories and were consistently recorded across the dataset, which bolstered the reliability of the analysis. This careful selection process ensures that the findings are grounded in solid data and reflect a true understanding of the strategic priorities that shaped Allied bombing campaigns during World War II.
 
-Weaknesses and next steps should also be included.
+## Weaknesses and Future Research Directions
+
+The study’s scope, while extensive, remains bounded by the choice of variables and the extent of the dataset. The absence of certain variables due to data limitations points to the potential for expanding the analytical framework. Additionally, the model’s fit, while adequate, leaves room for enhancement through alternative sampling techniques or integration with additional datasets.
+
+The path forward teems with potential, from utilizing geographical data to assess the collateral impact on civilian populations to examining the relationship between flight altitude and mission success rates. These avenues, ripe for exploration, promise to enrich the current understanding of wartime strategies and their implications.
+
+## Envisioning the Future of Historical Military Analysis
+
+Prospects for future research based on this dataset are immense. One could investigate whether there were unwritten standards during World War II for minimizing civilian harm, using the geographical coordinates available in the data to map bombing patterns against civilian population centers. Such analysis could offer new insights into the ethical boundaries of strategic warfare.
+
+Furthermore, understanding the correlation between flying altitude and success rates could shed light on tactical nuances that determined mission outcomes. The wealth of information contained in the dataset paves the way for such multifaceted investigations.
+
+## The Value of Strategic Insights
+
+This research underscores the analytical value of prioritization patterns, such as the focus on oil refineries, which could be extrapolated to anticipate enemy targets and inform defensive strategies. The prominence of American-led missions in prioritization further reflects the geopolitical dynamics of World War II, providing a statistical testament to the United States' influential role during the conflict.
 
 \newpage
 
@@ -315,15 +350,13 @@ Weaknesses and next steps should also be included.
 # Appendix {-}
 
 
-# Additional data details
-
 # Model details {#sec-model-details}
 
 ## Posterior predictive check
 
-In @fig-ppcheckandposteriorvsprior-1 we implement a posterior predictive check. This shows...
+In @fig-ppcheckandposteriorvsprior-1 we implement a posterior predictive check. This shows a posterior prediction check, which compares the observed data (denoted by y) against the replicated data generated by the model (denoted by y_rep). The overlaid lines represent multiple posterior predictive distributions, providing a visual assessment of how well the model predictions align with the actual observed data across the range of predicted values. The close alignment between the curves indicates a good model fit, as the simulated data appears to capture the variability and central tendency of the observed data.
 
-In @fig-ppcheckandposteriorvsprior-2 we compare the posterior with the prior. This shows... 
+In @fig-ppcheckandposteriorvsprior-2 we compare the posterior with the prior. This shows a strong influence of the data on the parameter estimates. This plot is crucial for understanding how the evidence in the data alters prior assumptions to shape the final inference drawn from the Bayesian model.
 
 ```{r}
 #| eval: true
@@ -348,9 +381,14 @@ posterior_vs_prior(aerial_priority_model) +
 
 ## Diagnostics
 
-@fig-stanareyouokay-1 is a trace plot. It shows... This suggests...
+@fig-stanareyouokay-1 is a trace plot. It shows how the sampled values of each parameter evolve over time. Ideally, a well-mixed chain will resemble a 'hairy caterpillar', indicating that the sampling has explored the posterior distribution thoroughly and has likely achieved convergence.
 
-@fig-stanareyouokay-2 is a Rhat plot. It shows... This suggests...
+This suggests that the chains for each parameter have likely converged to their respective posterior distributions. This is a critical aspect of ensuring the reliability of the Bayesian estimates for these parameters. The plot, therefore, supports the credibility of the posterior estimates derived from the model, provided that other diagnostic checks also affirm convergence.
+
+@fig-stanareyouokay-2 is a Rhat plot. It shows that the chains have converged to a common distribution, which is an indication of good mixing and reliable posterior estimates. 
+
+This suggests convergence has likely been achieved, and the posterior distributions can be considered trustworthy for inference.
+
 
 ```{r}
 #| echo: false
@@ -367,7 +405,32 @@ plot(aerial_priority_model, "trace")
 plot(aerial_priority_model, "rhat")
 ```
 
+@fig-posterior is a graph shows the posterior distributions of the parameters from a Bayesian ordered logistic regression model. Each horizontal line represents the 50% credible interval, centered around the median of the posterior distribution for a given parameter, with the ends of the lines marking the 25th and 75th percentiles. The length of each line indicates the degree of uncertainty associated with the estimate of that parameter.
 
+The parameters include various target industries, countries of mission, and other factors like bomb tonnage and aircraft attacks. Notably, parameters such as tgt_industryunidentified targets exhibit a more negative median value, which might suggest a lower priority in the bombing strategy compared to other target types.
+
+```{r}
+#| label: fig-posterior
+#| fig-cap: The posterior distributions for all the parameters
+#| eval: true
+#| echo: false
+#| message: false
+#| warning: false
+
+# Extract the posterior distribution for all model coefficients
+posterior <- as.array(aerial_priority_model)
+
+# Set the color scheme for the plot
+color_scheme_set("brightblue")
+
+# Plot the posterior distributions for all parameters to assess their influence on priority levels
+mcmc_areas(posterior) +
+  labs(title = "Posterior Distributions of Model Parameters",
+       subtitle = "Assessing the influence of predictors on ordered target priority",
+       x = "Parameter Value",
+       y = "Density")
+
+```
 
 \newpage
 
