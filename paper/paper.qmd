@@ -270,12 +270,22 @@ y_i &\sim \mbox{OrderedLogistic}(\eta_i, \boldsymbol{\kappa}) \\
 \boldsymbol{\kappa} &\sim \mbox{Normal}(0, 5) \text{ (default prior for cutpoints)}
 \end{align}
 
-We run the model in R [@citeR] using the `rstanarm` package of @rstanarm. We use the default priors from `rstanarm`.
+## Prior distributions
+
+In the Bayesian ordered logistic regression model implemented using the `rstanarm` package, default priors are applied to the model parameters to ensure robust and reliable inference. These priors are designed to be weakly informative, balancing the need for regularization with the flexibility to adapt to the data:
+
+- **Intercept Priors**: For the model's intercepts, a normal prior distribution is typically used with a mean of 0. This choice helps stabilize the location parameter without imposing too strong a belief about where it should be centered.
+
+- **Coefficient Priors**: Coefficients in the model are also assigned normal prior distributions with a mean of 0. The standard deviation for these priors is often set around 2.5, a value chosen to prevent overly large effects unless strongly supported by the data, thereby adding a level of regularization.
+
+We run the model in R [@citeR] using the `rstanarm` package of @rstanarm. We use the default priors from `rstanarm`.These priors are intended to provide a default level of smoothing and regularization to the model, making it applicable to a wide range of datasets while still being flexible enough to capture essential data-driven insights.
+
 
 
 # Results {#sec-result}
 
 ## Model Justification
+
 The analysis revealed distinct patterns in target prioritization, highlighting the role of industry type and the mission’s originating country in determining target selection, while the impact of tonnage and aircraft numbers was relatively subdued. @tbl-model_summary.
 
 ```{r}
@@ -506,6 +516,10 @@ mcmc_areas(posterior) +
     subtitle = "Assessing the influence of predictors on ordered target priority",
     x = "Parameter Value",
     y = "Density"
+  ) +
+  theme(
+    plot.title = element_text(hjust = 0.5), # Center the main title
+    plot.subtitle = element_text(hjust = 0.5) # Center the subtitle
   )
 ```
 
