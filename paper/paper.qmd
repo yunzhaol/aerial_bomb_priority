@@ -39,18 +39,28 @@ The significance of these insights extends beyond the historical narrative of Wo
 
 The paper is organized to provide a clear and detailed examination of the strategic target prioritization during World War II aerial campaigns. Following the introduction in @sec-intro, @sec-data outlines the data employed in the study, describing the sources of historical military data, the variables selected for analysis, and the rationale behind these choices. @sec-model introduces the Bayesian ordered logistic regression model employed to analyze the relationships between our variables of interest, providing a statistical framework for understanding the strategic decisions behind target prioritization during World War II aerial campaigns. @sec-result presents the findings from the Bayesian ordered logistic regression model, detailing how different factors such as target industry and mission country influenced the prioritization of targets. @sec-discussion delves deeper into these results, discussing the strategic implications of the findings, the limitations of the current study, and suggesting avenues for future research to expand upon the insights gained. @sec-model-details shows plots for Posterior predictive check and Diagnostics and their analysis.
 
-[@citeR], [@arrow], [@knitr], [@rstanarm], [@tidyverse], [@ggplot2], [@bayesplot], [@janitor], [@dplyr], [@tellingstories]
-
 
 # Data {#sec-data}
 
-The data for this study was meticulously curated from declassified military records, comprising numerous raids, their targets, and associated strategic variables.
+The dataset used in this study was sourced from [Data World](https://data.world/datamil/world-war-ii-thor-data), which hosts comprehensive records from the Theater History of Operations (THOR) dataset, documenting aerial bombings during World War II. Originally consisting of approximately 178,282 records, the dataset underwent significant preprocessing to align with the specific focus of this research. The initial step involved filtering out records where the target location was not Germany, reducing the dataset to 64,948 entries. These records form the basis of the analysis, having been retained for detailed examination and modeling of strategic bombing patterns and their impacts.
+
+The data for this study was systematically downloaded, cleaned, analyzed, modeled and visualized using R [@citeR], a comprehensive statistical programming language. The following packages were used for this study。
+
+- **`tidyverse`** [@tidyverse]: To streamline the process of data manipulation and visualization.
+- **`ggplot2`** [@ggplot2]: Used for its powerful and flexible capabilities in creating various types of visualizations tailored to the needs of this study.
+- **`dplyr`** [@dplyr]: Employed for its intuitive functions to transform and summarize the complex data sets effectively.
+- **`bayesplot`** [@bayesplot]: Utilized for creating graphical posterior predictive checks and diagnostic plots.
+- **`rstanarm`** [@rstanarm]: Facilitated the implementation of Bayesian models, providing a straightforward way to fit regression models using Stan.
+- **`janitor`** [@janitor]: Making it simpler to handle the raw data by cleaning variable names and simplifying data structures.
+- **`arrow`** [@arrow]: Used for efficiently reading and writing large datasets, enhancing data handling capabilities.
+- **`knitr`** [@knitr]: Employed to dynamically generate reports which integrate R code with its outputs, allowing for seamless inclusion of plots and analysis results in the final document.
+- **_Telling Stories with Data_** [@tellingstories]: This book was referenced for its code and methodologies in presenting data and statistical information.
 
 ```{r}
 #| warning: false
 #| message: false
 #| echo: false
-#| label: tbl-cesdata1
+#| label: tbl-aerial_preview
 #| tbl-cap: "Aerial Bombing missions against Germany on the main target industries in WWII "
 
 # Load in data
@@ -66,6 +76,37 @@ cleaned_aerial_priority |>
   kable(booktabs = TRUE, align = "c"
 )
 ```
+@tbl-aerial_preview presents the first six rows from the cleansed dataset, focusing on aerial bombing missions conducted by the Allies against German industries during WWII. 
+
+
+## Variable
+
+Our analysis focuses on the following variables, with a specific focus on `target_priority` as the dependent variable:
+
+- `target_priority`: The assigned importance level of the mission's target, serving as the dependent variable in our analysis. The categories include:
+  - `Primary target`: Highest priority targets critical to enemy's war-sustaining capabilities.
+  - `Secondary target`: Important targets with significant, but not critical, impact.
+  - `Target of opportunity`: Targets engaged opportunistically without prior planning.
+  - `Target of last resort`: Targets chosen as a fallback when preferred options are not available.
+
+- `target_industry`: The sector of infrastructure targeted, with the following possible values:
+  - `Airfields`: Targeting enemy airstrips and aircraft facilities.
+  - `Railway infrastructure`: Disrupting transportation lines and logistics.
+  - `Synthetic oil refineries`: Striking at the heart of enemy fuel production.
+  - `Unidentified targets`: Engaging targets that could not be specified.
+  - `Urban areas`: Targeting urban centers with the potential to impact enemy morale or logistics.
+
+- `country_mission`: The nation from which the mission originated, which can include:
+  - `USA`: Missions flown by the United States.
+  - `Great Britain`: Missions flown by the United Kingdom.
+  - `Others`: Missions flown by other Allied nations.
+
+- `bomb_tons`: The total weight of bombs dropped, reflecting the scale of the attack, with measures ranging from less than a ton to several hundred tons.
+
+- `aircraft_attack`: The number of aircraft participating in the mission, a reflection of the committed resources and operational scale, ranging from single aircraft to entire squadrons.
+
+Detailed information about these variables and the data structure is presented in @tbl-aerial_preview, which outlines the first few records from the processed dataset.
+
 
 ```{r}
 #| label: fig-industry_country
@@ -95,13 +136,20 @@ plot_industry_country <- ggplot(cleaned_aerial_priority, aes(x = tgt_industry, f
     fill = "Target Priority"
   ) +
   facet_wrap(vars(country_mission), scales = "free_x") + # Facet by country mission
-  theme(axis.text.x = element_text(angle = 45, hjust = 1),  # Rotate x labels for clarity
-        legend.position = "bottom")
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),  # Rotate x labels for clarity
+    legend.position = "bottom",
+    plot.title = element_text(hjust = 0.5)  # Center the title
+  )
 print(plot_industry_country)
 ```
 
+@fig-industry_country provides a comprehensive view of the processed data, showcasing the distribution of aerial bombardments across different industrial sectors targeted by the Allies during World War II, with a particular focus on those aimed at German industries. The stacked bar chart breaks down the count of missions by the leading country—Great Britain, USA, and others—and prioritizes the targets into four categories: primary target, secondary target, target of opportunity, and target of last resort.
+
+From the visualization, we can discern that airfields and urban areas were frequently targeted, but with varying levels of priority depending on the mission's country of origin. The significant height of bars in categories such as synthetic oil refineries and railway infrastructure under the USA banner indicates a strategic emphasis on crippling Germany's logistic and production capabilities, aligning with the Allies' broader objectives of disrupting the war-sustaining resources of the Axis power.
+
 ```{r}
-#| label: fig_aircrafts
+#| label: fig-aircrafts
 #| fig-cap: Distribution of aircrafts by Priority
 #| echo: false
 
@@ -127,8 +175,10 @@ plot_aircraft_attack <- ggplot(cleaned_aerial_priority, aes(x = aircraft_attack,
 print(plot_aircraft_attack)
 ```
 
+@fig-aircrafts depicts a distribution of aircraft attacks during World War II, colored by the priority of the target they were assigned to hit. The data points, each representing a specific mission, are spread across four categories of target priority: primary target, secondary target, target of opportunity, and target of last resort. The horizontal axis shows the number of aircraft involved in each attack, offering a visual correlation between the scale of the attack and the importance of the target. It’s clear from the clustering of data points that primary targets often saw a higher concentration of aircraft, whereas targets of last resort were engaged with fewer aircraft, indicating a strategic allocation of aerial resources based on the priority of the target.
+
 ```{r}
-#| label: fig_bomb
+#| label: fig-bomb
 #| fig-cap: Distribution of bomb tons by Priority
 #| echo: false
 # Create a scatter plot for bomb_tons
@@ -145,41 +195,24 @@ plot_bomb_tons <- ggplot(cleaned_aerial_priority, aes(x = bomb_tons, y = tgt_pri
   theme(legend.position = "bottom")
 
 print(plot_bomb_tons)
-
 ```
 
+@fig-bomb visualizes the weight of bombs dropped on various targets, categorized by the priority level of the mission. The volume of ordinance delivered is marked along the horizontal axis, indicating the intensity of each mission. Data points are color-coded to represent the different priority levels: from targets of last resort, which saw the lightest bombardment, up to primary targets, which typically experienced the heaviest bombings. This spread suggests that higher-priority targets were often subjected to more intensive bombing campaigns, a strategic choice likely reflecting their importance to the war effort. The distribution illustrates the heavy investment in munitions for high-priority targets, reinforcing the critical nature of these missions.
 
-## Variable
-
-Our analysis focuses on the following variables: target priority, target industry, country of the mission's origin, total tons of bombs dropped, and the number of aircraft partaking in the mission.
-
-```{r}
-#| label: fig-planes
-#| fig-cap: Relationship between wing length and width
-#| echo: false
-#| warning: false
-#| message: false
-
-# cleaned_aerial_priority <- read_parquet("data/analysis_data/cleaned_aerial_priority.parquet")
-# head(cleaned_aerial_priority)
-```
-
-```{r}
-#| fig-cap: Relationship between wing length and width
-#| echo: false
-#| warning: false
-#| message: false
-# cleaned_aerial_priority |>
-#   ggplot(aes(x = width, y = length)) +
-#   geom_point(alpha = 0.8) +
-#   theme_minimal() +
-#   labs(x = "Wing width (mm)",
-#        y = "Wing length (mm)")
-```
 
 ## Justification
 
-The selected variables are integral for understanding the strategic matrix that guided target selection, enabling a thorough investigation into the strategic landscape of WWII aerial campaigns.
+The variables chosen for this study were carefully selected based on their strategic significance during World War II, as documented in the THOR dataset. Each variable offers insights into different aspects of the aerial bombing campaigns:
+
+- `**Target Industry (TGT_INDUSTRY)**`: Identified based on the strategic value, targeting industries critical to the war effort, such as oil refineries and transportation networks.
+- `**Country of Mission (COUNTRY_FLYING_MISSION)**`: Considered to analyze differences in target prioritization across the Allied nations.
+- `**Total Tons of Bombs (TOTAL_TONS)**`: Used to gauge the intensity and importance assigned to each mission.
+- `**Aircraft Attack (AC_ATTACKING)**`: Reflected the scale of the mission and was indicative of the level of commitment to the target.
+
+Variables such as THEATER, TGT_TYPE, and MSN_TYPE were not included due to the presence of extensive missing values or the complexity of their classifications, which could complicate the analysis. Similarly, variables like TOTAL_LBS, TIME_OVER_TARGET, AC_LOST, and AC_DAMAGED were omitted to keep the model focused and interpretable.
+
+To streamline the modeling process and enhance the clarity of the analysis, non-German targets were excluded from the original dataset of approximately 178,282 records. This data cleaning step resulted in a more focused dataset, comprising 64,948 entries, which facilitated a more efficient and targeted modeling approach. This pre-processing not only improved the manageability of the data but also honed the study's examination of the bombing strategies against Germany, offering a clear view of the Allied prioritization and tactical decisions.
+
 
 
 # Model {#sec-model}
@@ -198,7 +231,27 @@ Background details and diagnostics are included in [Appendix -@sec-model-details
 
 ## Model set-up
 
-Define $y_i$ as the number of seconds that the plane remained aloft. Then $\beta_i$ is the wing width and $\gamma_i$ is the wing length, both measured in millimeters.  
+Let $y_i$ be the ordered categorical variable representing the priority level of the target for the $i$-th bombing mission. The predictors in the model include:
+
+- $\beta_1$: The coefficient for the `target_industry`, which indicates the type of industry targeted, such as oil refineries or transportation networks. It is a categorical variable with the following categories:
+  - `Airfields`
+  - `Railway infrastructure`
+  - `Synthetic oil refineries`
+  - `Unidentified targets`
+  - `Urban areas`
+
+- $\beta_2$: The coefficient for the `country_mission` variable, representing the country that carried out the mission. The possible values are `USA`, `Great Britain`, and `Others`.
+
+- $\beta_3$: The coefficient for the `bomb_tons`, which is a continuous variable measuring the total tonnage of bombs dropped during the mission.
+
+- $\beta_4$: The coefficient for the `aircraft_attack`, which is a count variable reflecting the number of aircraft participating in the mission.
+
+Each coefficient $\beta_j$ corresponds to the effect of the $j$-th predictor on the log-odds of the mission having a higher target priority.
+
+- $\eta_i$: The linear predictor or log-odds for the $i$-th observation. It is a combination of the intercept and coefficients multiplied by the predictor variables. 
+
+- $\kappa$: The set of thresholds (or cutpoints) that define the boundaries between the ordered categories of the dependent variable. In the ordered logistic regression model, these thresholds determine the ranges of $\eta_i$ values that correspond to each category of the target priority. The model estimates separate $\kappa$ values for each boundary between the ordered categories.
+
 
 \begin{align} 
 y_i &\sim \mbox{OrderedLogistic}(\eta_i, \boldsymbol{\kappa}) \\
@@ -339,13 +392,19 @@ In this study, key variables such as target industry, country flying mission, bo
 
 ## Strategic Implications of Variable Selection
 
-The selection of variables was underpinned by a rigorous set of criteria that prioritized data completeness, the feasibility of clustering, and the strategic relevance of each variable. This methodological rigor was intended to mitigate any biases that might arise from incomplete or noisy data and to ensure that the analysis could stand up to academic and practical scrutiny. For example, while variables like THEATER or TGT_TYPE were initially considered due to their strategic importance, they were ultimately excluded from the final model due to data sparsity and the complexities associated with their categorization. This exclusion was a strategic decision aimed at enhancing the robustness and interpretability of the model, focusing on variables that offered clear, actionable insights. The chosen variables had well-defined, interpretable categories and were consistently recorded across the dataset, which bolstered the reliability of the analysis. This careful selection process ensures that the findings are grounded in solid data and reflect a true understanding of the strategic priorities that shaped Allied bombing campaigns during World War II.
+The selection of variables for this analysis was carefully orchestrated to capture the most salient elements of the strategic bombing campaigns, aligning with historical accounts and operational records. In particular, the emphasis on target industry and mission origins provides novel insights into the resource allocation and strategic planning of the Allied forces. By scrutinizing these variables, this study sheds light on the underlying strategic motives, revealing a pattern of prioritization that favored crippling the enemy's production capacity over other targets.
+
+While the exclusion of certain variables, such as THEATER and TGT_TYPE, was a deliberate decision to ensure data integrity, it also opens up avenues for future research. Subsequent studies could explore how different theaters of war might have diverged in their strategic approach to bombing campaigns, or how specific target types contributed to the overall war effort. These aspects, while beyond the scope of the current analysis, suggest a rich tapestry of strategic considerations that could be further unraveled.
 
 ## Weaknesses and Future Research Directions
 
-The study’s scope, while extensive, remains bounded by the choice of variables and the extent of the dataset. The absence of certain variables due to data limitations points to the potential for expanding the analytical framework. Additionally, the model’s fit, while adequate, leaves room for enhancement through alternative sampling techniques or integration with additional datasets.
+The scope of this study, while comprehensive, is constrained by the variables selected and the overall dataset size. The omission of variables such as THEATER and TGT_TYPE, although necessary to maintain data quality, limits the depth of strategic analysis possible. Future studies could benefit from incorporating these and other variables, such as TIME_OVER_TARGET and AC_LOST, to provide a fuller picture of the strategic complexities of World War II aerial campaigns.
 
-The path forward teems with potential, from utilizing geographical data to assess the collateral impact on civilian populations to examining the relationship between flight altitude and mission success rates. These avenues, ripe for exploration, promise to enrich the current understanding of wartime strategies and their implications.
+Moreover, while the model provides a solid foundation, its predictive accuracy could be improved through more sophisticated sampling methods or by integrating additional datasets that offer broader temporal and geographic coverage. For instance, expanding the dataset to include more varied mission types and broader operational theaters could offer new insights into the adaptive strategies employed by the Allies over the course of the war.
+
+Looking ahead, there is significant potential to delve deeper into the effects of bombing strategies on civilian populations by integrating geographical data. This could help in understanding the broader humanitarian impacts of strategic bombing. Additionally, exploring the relationship between flight altitude and mission success could yield valuable insights into the tactical decisions made during these missions. This line of inquiry could benefit from the application of advanced statistical techniques or machine learning models to uncover patterns not readily visible through traditional methods.
+
+Each of these directions not only promises to expand the current understanding of wartime strategies but also contributes to the broader discourse on the ethical and strategic implications of aerial warfare both historically and in contemporary contexts.
 
 ## Envisioning the Future of Historical Military Analysis
 
