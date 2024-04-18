@@ -228,10 +228,21 @@ To streamline the modeling process and enhance the clarity of the analysis, non-
 
 # Model {#sec-model}
 
-The goal of our modelling strategy is twofold. F
 This study employs a Bayesian ordered logistic regression model to analyze the priorities assigned to different target industries during aerial bombing missions in World War II. 
 
-The model integrates several predictors including the type of target industry (`tgt_industry`), the country executing the mission (`country_mission`), the tonnage of bombs dropped (`bomb_tons`), and the number of aircraft involved in the attack (`aircraft_attack`). 
+The model integrates several key predictors:
+
+- Type of Target Industry: Identifies the industry sector being targeted.
+  Variable: `tgt_industry`
+
+- Country Executing the Mission: Indicates the nation responsible for carrying out the mission.
+  Variable: `country_mission`
+
+- Tonnage of Bombs Dropped: Measures the weight of bombs used in the mission.
+  Variable: `bomb_tons`
+
+- Number of Aircraft Involved in the Attack: Reflects the scale of the aerial attack.
+  Variable: `aircraft_attack` 
 
 The model uses a logistic cumulative link function, draws on a posterior sample size of 4000, and is based on a total of 5000 observations, utilizing the rstanarm package to accommodate the ordinal nature of target priority levels.
 
@@ -386,9 +397,9 @@ mcmc_intervals(posterior, prob = 0.9) +
 
 The Bayesian ordered logistic regression model's estimates are visualized in @fig-model_coefficients. Each point in the plot represents the posterior mean effect size of the predictor variables on the target priority ranking, while the lines indicate the 95% credible intervals. The estimates reveal several key insights into the Allied bombing strategy:
 
-- The variable `tgt_industrySynthetic Oil Refineries` exhibits the largest positive effect, suggesting that synthetic oil refineries were assigned the highest priority for bombing missions, in line with the strategic objective to disrupt the German war effort's fuel supply.
-- In contrast, the effects associated with `tgt_industryRailway Infrastructure` and `tgt_industryUrban Areas` are closer to zero, indicating a lower priority relative to other types of targets. This aligns with a strategy that placed less emphasis on disrupting transportation and civilian structures.
-- Regarding the country of mission execution, `country_missionusa` shows a significant positive effect, reflecting the United States' prominent role in the strategic bombing campaign against Germany.
+- The variable `tgt_industry Synthetic Oil Refineries` exhibits the largest positive effect, suggesting that synthetic oil refineries were assigned the highest priority for bombing missions, in line with the strategic objective to disrupt the German war effort's fuel supply.
+- In contrast, the effects associated with `tgt_industry Railway Infrastructure` and `tgt_industry Urban Areas` are closer to zero, indicating a lower priority relative to other types of targets. This aligns with a strategy that placed less emphasis on disrupting transportation and civilian structures.
+- Regarding the country of mission execution, `country_mission usa` shows a significant positive effect, reflecting the United States' prominent role in the strategic bombing campaign against Germany.
 - The effects of `bomb_tons` and `aircraft_attack` are positive, suggesting that missions with greater bomb tonnage and more aircraft tend to have a higher target priority, possibly reflecting the allocation of resources to strategically important missions.
 
 These findings underscore the strategic considerations that guided the Allies' targeting decisions during World War II, highlighting the emphasis on industrial targets critical to the German war machine.
@@ -398,21 +409,19 @@ These findings underscore the strategic considerations that guided the Allies' t
 
 # Discussion {#sec-discussion}
 
-This paper has initiated an inquiry into the labyrinth of decision-making within the Allied bombing strategy of World War II, applying a Bayesian ordered logistic regression model to discern the prioritization of targets. By selectively incorporating a subset of variables available in a rich dataset, the study uncovers patterns that delineate strategic imperatives from the vast array of aerial operations data.
+This paper has initiated an inquiry into the framework of decision-making within the Allied bombing strategy of World War II, applying a Bayesian ordered logistic regression model to indentify the prioritization of targets. By selectively incorporating a subset of variables available in a rich dataset, the study uncovers patterns that delineate strategic imperatives from the vast array of aerial operations data.
 
-## Extensive Understanding of Target Selection {#sec-first-point}
+## Extensive Understanding of Target Selection
 
-In this study, key variables such as target industry, country flying mission, bomb tons, and aircraft attacking were carefully selected based on their demonstrated strong correlation with target priority. This choice was guided by historical and strategic relevance, ensuring that the model reflects real-world considerations. The quantitative analysis substantiates the critical impact of these variables on strategic military decisions, revealing how different target industries were prioritized based on their role in the war effort. For instance, industries essential to the enemy's war logistics, such as oil refineries, were often prioritized to cripple the enemy's ability to sustain military operations. This not only aligns with historical records but also provides a granular insight into the decision-making processes, illustrating the careful balancing act between achieving strategic objectives and managing resources effectively during the war.
+This study meticulously selects key variables—target industry, country flying mission, bomb tons, and aircraft attacking—based on their strong correlation with target priority. Historical and strategic relevance guided this choice, ensuring the model’s alignment with real-world scenarios. The quantitative analysis highlights how these variables critically influence strategic military decisions. For example, industries crucial to the enemy's war logistics, like oil refineries, were frequently targeted to undermine the enemy’s military sustainability. This not only corroborates historical records but also enhances our understanding of the nuanced decision-making that guided the allocation of military resources during the war.
 
 ## Strategic Implications of Variable Selection
 
-The selection of variables for this analysis was carefully orchestrated to capture the most salient elements of the strategic bombing campaigns, aligning with historical accounts and operational records. In particular, the emphasis on target industry and mission origins provides novel insights into the resource allocation and strategic planning of the Allied forces. By scrutinizing these variables, this study sheds light on the underlying strategic motives, revealing a pattern of prioritization that favored crippling the enemy's production capacity over other targets.
-
-While the exclusion of certain variables, such as THEATER and TGT_TYPE, was a deliberate decision to ensure data integrity, it also opens up avenues for future research. Subsequent studies could explore how different theaters of war might have diverged in their strategic approach to bombing campaigns, or how specific target types contributed to the overall war effort. These aspects, while beyond the scope of the current analysis, suggest a rich tapestry of strategic considerations that could be further unraveled.
+In focusing on the strategic implications of variable selection, this analysis aligns with documented historical strategies and operational records. Emphasizing target industry and mission origins provides fresh perspectives on resource allocation and strategic planning by the Allied forces. The study reveals a consistent strategic pattern: prioritizing the disruption of the enemy’s production capabilities. Although certain variables such as *THEATER* and *TGT_TYPE* were excluded to maintain data integrity, this decision highlights areas for future research. Future studies might investigate the variances in strategic approaches across different theaters of war or the specific contributions of various target types to the war effort. These potential research paths underscore the complex fabric of strategic decisions that warrant further exploration.
 
 ## Weaknesses and Future Research Directions
 
-The scope of this study, while extensive, is constrained by the variables selected and the overall dataset size. The omission of variables such as THEATER and TGT_TYPE, although necessary to maintain data quality, limits the depth of strategic analysis possible. Future studies could benefit from incorporating these and other variables, such as TIME_OVER_TARGET and AC_LOST, to provide a fuller picture of the strategic complexities of World War II aerial campaigns.
+The scope of this study, while extensive, is constrained by the variables selected and the overall dataset size. The omission of variables such as *THEATER* and *TGT_TYPE*, although necessary to maintain data quality, limits the depth of strategic analysis possible. Future studies could benefit from incorporating these and other variables, such as *TIME_OVER_TARGET* and *AC_LOST*, to provide a fuller picture of the strategic complexities of World War II aerial campaigns.
 
 Moreover, while the model provides a solid foundation, its predictive accuracy could be improved through more advanced sampling methods or by integrating additional datasets that offer broader temporal and geographic coverage. For instance, expanding the dataset to include more varied mission types and broader operational theaters could offer new insights into the adaptive strategies employed by the Allies over the course of the war.
 
@@ -494,7 +503,7 @@ plot(aerial_priority_model, "rhat")
 
 @fig-posterior is a graph shows the posterior distributions of the parameters from a Bayesian ordered logistic regression model. Each horizontal line represents the 50% credible interval, centered around the median of the posterior distribution for a given parameter, with the ends of the lines marking the 25th and 75th percentiles. The length of each line indicates the degree of uncertainty associated with the estimate of that parameter.
 
-The parameters include various target industries, countries of mission, and other factors like bomb tonnage and aircraft attacks. Notably, parameters such as tgt_industryunidentified targets exhibit a more negative median value, which might suggest a lower priority in the bombing strategy compared to other target types.
+The parameters include various target industries, countries of mission, and other factors like bomb tonnage and aircraft attacks. Notably, parameters such as *tgt_industry unidentified targets* exhibit a more negative median value, which might suggest a lower priority in the bombing strategy compared to other target types.
 
 ```{r}
 #| label: fig-posterior
