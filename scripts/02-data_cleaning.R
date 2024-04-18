@@ -20,12 +20,17 @@ aerial_priority <- read_parquet("data/raw_data/aerial_priority.parquet")
 cleaned_aerial_priority <-
   clean_names(aerial_priority) |>
   filter(
-    tgt_country == "GERMANY", 
-    tgt_industry %in% c("\"RR INSTALLATIONS,  TRACKS,  MARSHALLING YARDS,  AND STATIONS\"", "SYNTHETIC OIL REFINERIES", 
-                        "AIR FIELDS AND AIRDROMES", "CITIES TOWNS AND URBAN AREAS", 
-                        "UNIDENTIFIED TARGETS") ) |>
-  select(tgt_priority = tgt_priority_explanation, tgt_industry, 
-         country_mission = country_flying_mission, bomb_tons = total_tons, aircraft_attack = ac_attacking) |>
+    tgt_country == "GERMANY",
+    tgt_industry %in% c(
+      "\"RR INSTALLATIONS,  TRACKS,  MARSHALLING YARDS,  AND STATIONS\"", "SYNTHETIC OIL REFINERIES",
+      "AIR FIELDS AND AIRDROMES", "CITIES TOWNS AND URBAN AREAS",
+      "UNIDENTIFIED TARGETS"
+    )
+  ) |>
+  select(
+    tgt_priority = tgt_priority_explanation, tgt_industry,
+    country_mission = country_flying_mission, bomb_tons = total_tons, aircraft_attack = ac_attacking
+  ) |>
   mutate(
     # Convert all character data to lowercase before any other operation
     across(where(is.character), tolower),
@@ -36,7 +41,7 @@ cleaned_aerial_priority <-
       tgt_industry == "\"rr installations,  tracks,  marshalling yards,  and stations\"" ~ "railway infrastructure",
       tgt_industry == "air fields and airdromes" ~ "air fields",
       tgt_industry == "cities towns and urban areas" ~ "urban areas",
-      TRUE ~ as.character(tgt_industry)  # Keep all other industries as they are
+      TRUE ~ as.character(tgt_industry) # Keep all other industries as they are
     )
   ) %>%
   # Now convert 'country_mission' and 'tgt_industry' to factor type
@@ -57,5 +62,5 @@ cleaned_aerial_priority <-
 view((cleaned_aerial_priority))
 
 #### Save data ####
-write_parquet(cleaned_aerial_priority, "data/analysis_data/cleaned_aerial_priority.parquet") 
-write_csv(cleaned_aerial_priority, "data/analysis_data/cleaned_aerial_priority.csv") 
+write_parquet(cleaned_aerial_priority, "data/analysis_data/cleaned_aerial_priority.parquet")
+write_csv(cleaned_aerial_priority, "data/analysis_data/cleaned_aerial_priority.csv")

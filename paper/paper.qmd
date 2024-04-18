@@ -73,8 +73,7 @@ sampled_aerial_data <- cleaned_aerial_priority %>%
 
 cleaned_aerial_priority |>
   head() |>
-  kable(booktabs = TRUE, align = "c"
-)
+  kable(booktabs = TRUE, align = "c")
 ```
 @tbl-aerial_preview presents the first six rows from the cleansed dataset, focusing on aerial bombing missions conducted by the Allies against German industries during WWII. 
 
@@ -116,17 +115,19 @@ Detailed information about these variables and the data structure is presented i
 #| fig.height: 6
 
 # Update the color set based on the new requirements
-priority_colors <- c("primary target" = "#FF0000",
-                     "secondary target" = "#00BA38",
-                     "target of opportunity" = "#619CFF",
-                     "target of last resort" = "coral")  
+priority_colors <- c(
+  "primary target" = "#FF0000",
+  "secondary target" = "#00BA38",
+  "target of opportunity" = "#619CFF",
+  "target of last resort" = "coral"
+)
 
 # Convert country_mission to uppercase
 cleaned_aerial_priority$country_mission <- toupper(cleaned_aerial_priority$country_mission)
 
 # Create plot for tgt_industry
 plot_industry_country <- ggplot(cleaned_aerial_priority, aes(x = tgt_industry, fill = tgt_priority)) +
-  geom_bar(position = "stack") +  # Use stack position to layer the colors in one bar
+  geom_bar(position = "stack") + # Use stack position to layer the colors in one bar
   scale_fill_manual(values = priority_colors) +
   theme_minimal() +
   labs(
@@ -137,9 +138,9 @@ plot_industry_country <- ggplot(cleaned_aerial_priority, aes(x = tgt_industry, f
   ) +
   facet_wrap(vars(country_mission), scales = "free_x") + # Facet by country mission
   theme(
-    axis.text.x = element_text(angle = 45, hjust = 1),  # Rotate x labels for clarity
+    axis.text.x = element_text(angle = 45, hjust = 1), # Rotate x labels for clarity
     legend.position = "bottom",
-    plot.title = element_text(hjust = 0.5)  # Center the title
+    plot.title = element_text(hjust = 0.5) # Center the title
   )
 print(plot_industry_country)
 ```
@@ -154,10 +155,12 @@ From the visualization, we can discern that airfields and urban areas were frequ
 #| echo: false
 
 # Define the specified colors for each priority level
-priority_colors <- c("primary target" = "#FF0000",  # Red
-                     "secondary target" = "#00BA38",  # Green
-                     "target of opportunity" = "#619CFF",  # Blue
-                     "target of last resort" = "#FF7F50")  # Coral
+priority_colors <- c(
+  "primary target" = "#FF0000", # Red
+  "secondary target" = "#00BA38", # Green
+  "target of opportunity" = "#619CFF", # Blue
+  "target of last resort" = "#FF7F50"
+) # Coral
 
 # Create a scatter plot for aircraft_attack
 plot_aircraft_attack <- ggplot(cleaned_aerial_priority, aes(x = aircraft_attack, y = tgt_priority, color = tgt_priority)) +
@@ -264,13 +267,6 @@ y_i &\sim \mbox{OrderedLogistic}(\eta_i, \boldsymbol{\kappa}) \\
 We run the model in R [@citeR] using the `rstanarm` package of @rstanarm. We use the default priors from `rstanarm`.
 
 
-### Model justification
-
-We expect a positive relationship between the size of the wings and time spent aloft. In particular...
-
-We can use maths by including latex between dollar signs, for instance $\theta$.
-
-
 # Results {#sec-result}
 
 The analysis revealed distinct patterns in target prioritization, highlighting the role of industry type and the mission’s originating country in determining target selection, while the impact of tonnage and aircraft numbers was relatively subdued. @tbl-model_summary.
@@ -294,7 +290,6 @@ aerial_priority_model <-
 # Print the summary of the model to inspect the results
 print(summary(aerial_priority_model))
 prior_summary(aerial_priority_model)
-
 ```
 
 ```{r}
@@ -308,17 +303,17 @@ prior_summary(aerial_priority_model)
 # Create a data frame containing the model's coefficient summary
 model_summary_df <- data.frame(
   Parameter = c(
-    'Railway infrastructure',
-    'Synthetic oil refineries',
-    'Unidentified targets',
-    'Urban areas',
-    'Other countries',
-    'USA',
-    'Bomb',
-    'Aircraft',
-    'Intercept 1 (last resort|opportunity)',
-    'Intercept 2 (opportunity|secondary)',
-    'Intercept 3 (secondary|primary)'
+    "Railway infrastructure",
+    "Synthetic oil refineries",
+    "Unidentified targets",
+    "Urban areas",
+    "Other countries",
+    "USA",
+    "Bomb",
+    "Aircraft",
+    "Intercept 1 (last resort|opportunity)",
+    "Intercept 2 (opportunity|secondary)",
+    "Intercept 3 (secondary|primary)"
   ),
   Mean = c(-1.4, -0.1, -3.4, -1.4, 0.8, 0.9, 0.0, 0.1, -3.7, -1.0, 0.4),
   SD = c(0.1, 0.1, 0.1, 0.1, 0.3, 0.3, 0.0, 0.0, 0.4, 0.3, 0.3),
@@ -328,8 +323,7 @@ model_summary_df <- data.frame(
 )
 
 # Use kable to create and style the table
-kable(model_summary_df, format = "markdown", align = 'c', col.names = c("Parameter", "Mean", "SD", "10%", "50%", "90%"))
-
+kable(model_summary_df, format = "markdown", align = "c", col.names = c("Parameter", "Mean", "SD", "10%", "50%", "90%"))
 ```
 
 As detailed in @tbl-model_summary, the coefficient summary quantitatively reflects the strategic emphases placed on various targets during World War II aerial bombings. For instance, the estimated coefficient for `Unidentified targets` is notably negative (Mean = -3.4), suggesting a strategic de-emphasis on these targets in comparison to other types. 
@@ -359,15 +353,16 @@ color_scheme_set("brightblue")
 # Plot the 90% credible intervals for all model coefficients
 # This visualizes the impact of each predictor on the ordered priority levels
 mcmc_intervals(posterior, prob = 0.9) +
-  labs(title = "Model Coefficients",
-       subtitle = "90% credible intervals",
-       x = "Coefficient Estimate",
-       y = "Parameters")+
+  labs(
+    title = "Model Coefficients",
+    subtitle = "90% credible intervals",
+    x = "Coefficient Estimate",
+    y = "Parameters"
+  ) +
   theme(
-    plot.title = element_text(hjust = 0.5),    # Center the main title
-    plot.subtitle = element_text(hjust = 0.5)  # Center the subtitle
+    plot.title = element_text(hjust = 0.5), # Center the main title
+    plot.subtitle = element_text(hjust = 0.5) # Center the subtitle
   )
-
 ```
 
 The Bayesian ordered logistic regression model's estimates are visualized in @fig-model_coefficients. Each point in the plot represents the posterior mean effect size of the predictor variables on the target priority ranking, while the lines indicate the 95% credible intervals. The estimates reveal several key insights into the Allied bombing strategy:
@@ -499,11 +494,12 @@ color_scheme_set("brightblue")
 
 # Plot the posterior distributions for all parameters to assess their influence on priority levels
 mcmc_areas(posterior) +
-  labs(title = "Posterior Distributions of Model Parameters",
-       subtitle = "Assessing the influence of predictors on ordered target priority",
-       x = "Parameter Value",
-       y = "Density")
-
+  labs(
+    title = "Posterior Distributions of Model Parameters",
+    subtitle = "Assessing the influence of predictors on ordered target priority",
+    x = "Parameter Value",
+    y = "Density"
+  )
 ```
 
 \newpage

@@ -7,8 +7,8 @@
 # Pre-requisites: None
 
 #### Workspace setup ####
-library(rstanarm)  # Load the rstanarm package for Bayesian modeling
-library(arrow)     # Load the arrow package to read Parquet files
+library(rstanarm) # Load the rstanarm package for Bayesian modeling
+library(arrow) # Load the arrow package to read Parquet files
 library(dplyr)
 
 #### Read data ####
@@ -24,9 +24,9 @@ sampled_aerial_data <- cleaned_aerial_priority %>%
 aerial_priority_model <- stan_polr(
   formula = tgt_priority ~ tgt_industry + country_mission + bomb_tons + aircraft_attack,
   data = sampled_aerial_data,
-  method = "logistic",  # Use logistic cumulative link model
-  prior = NULL,  # Use default priors to simplify the model
-  prior_counts = NULL  # Use default priors for the intercepts
+  method = "logistic", # Use logistic cumulative link model
+  prior = NULL, # Use default priors to simplify the model
+  prior_counts = NULL # Use default priors for the intercepts
 )
 
 # Print the summary of the model to inspect the results

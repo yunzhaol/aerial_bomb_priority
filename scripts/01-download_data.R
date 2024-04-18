@@ -1,7 +1,7 @@
 #### Preamble ####
-# Purpose: Downloads and saves the data from 
-# Author: Yunzhao Li 
-# Date: 16 April 2024 
+# Purpose: Downloads and saves the data from
+# Author: Yunzhao Li
+# Date: 16 April 2024
 # Contact: yunzhao.li@mail.utoronto.ca
 # License: MIT
 # Pre-requisites: None
@@ -21,9 +21,5 @@ aerial_priority <-
 
 #### Save data ####
 # change the_raw_data to whatever name you assigned when you downloaded it.
-write_parquet(aerial_priority, "data/raw_data/aerial_priority.parquet") 
-write_csv(aerial_priority, "data/raw_data/aerial_priority.csv") 
-
-
-
-         
+write_parquet(aerial_priority, "data/raw_data/aerial_priority.parquet")
+write_csv(aerial_priority, "data/raw_data/aerial_priority.csv")
