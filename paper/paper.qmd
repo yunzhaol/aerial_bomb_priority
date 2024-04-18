@@ -275,6 +275,7 @@ We run the model in R [@citeR] using the `rstanarm` package of @rstanarm. We use
 
 # Results {#sec-result}
 
+## Model Justification
 The analysis revealed distinct patterns in target prioritization, highlighting the role of industry type and the mission’s originating country in determining target selection, while the impact of tonnage and aircraft numbers was relatively subdued. @tbl-model_summary.
 
 ```{r}
