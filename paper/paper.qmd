@@ -1,5 +1,6 @@
 ---
-title: "Bayesian Insights into Aerial Bombing Strategies: An Ordered Logistic Regression Analysis of WWII Target Prioritization Against Germany"
+title: "Strategic Factors Influencing Target Prioritization in WWII Aerial Bombing"
+subtitle: "An Analysis of 1939-1945 Allied Targeting Against German Industrial Assets"
 author: 
   - Yunzhao Li
 thanks: "Code and data are available at: https://github.com/yunzhaol/aerial_bomb_priority.git."
